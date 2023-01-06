@@ -150,11 +150,14 @@ def index(request):
 
 @csrf_exempt
 def ask(request):
+    print("hola1")
     question_asked = request.POST.get("question", "")
 
+    print("hola2")
     if not question_asked.endswith('?'):
         question_asked += '?'
-
+    
+    print("hola3")
     previous_question = Question.objects.filter(question=question_asked).first()
     #audio_src_url = previous_question and previous_question.audio_src_url if previous_question else None
 
@@ -164,8 +167,11 @@ def ask(request):
         previous_question.save()
         return JsonResponse({ "question": previous_question.question, "answer": previous_question.answer, "audio_src_url": audio_src_url, "id": previous_question.pk })"""
 
+    print("hola4")
     df = pd.read_csv('book.pdf.pages.csv')
+    print("hola5")
     document_embeddings = load_embeddings('book.pdf.embeddings.csv')
+    print("hola6")
     answer, context = answer_query_with_context(question_asked, df, document_embeddings)
 
     project_uuid = '925953bd'
@@ -188,8 +194,9 @@ def ask(request):
     #print(response)
 
     question = Question(question=question_asked, answer=answer, context=context)
+    print("hola7")
     question.save()
-    print("hola")
+    print("hola8")
     return JsonResponse({ "question": question.question, "answer": answer, "audio_src_url": "", "id": question.pk })
 
 @login_required
