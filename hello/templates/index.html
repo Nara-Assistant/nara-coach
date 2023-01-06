@@ -5,8 +5,8 @@
 
 <div class="header">
   <div class="logo">
-    <a href="https://twitter.com/Helios_Movement/">
-      <img src="{% static 'profile_pic.jpg' %}" loading="lazy" />
+    <a href="https://www.amazon.com/Minimalist-Entrepreneur-Great-Founders-More/dp/0593192397">
+      <img src="{% static 'book.png' %}" loading="lazy" />
     </a>
     <h1>Ask George Ferman</h1>
   </div>
@@ -54,7 +54,7 @@
     }
 
     $("#lucky-button").click(function(e) {
-      var options = ["How can I naturally prevent hair loss?", "What is your opinion on supplements?", "What is the best way to increase libido?"],
+      var options = ["What is a minimalist entrepreneur?", "What is your definition of community?", "How do I decide what kind of business I should start?"],
           random = ~~(Math.random() * options.length);
 
       $("textarea").val(options[random]);
