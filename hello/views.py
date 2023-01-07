@@ -209,4 +209,4 @@ def db(request):
 
 def question(request, id):
     question = Question.objects.get(pk=id)
-    return render(request, "index.html", { "default_question": question.question, "answer": question.answer, "audio_src_url": question.audio_src_url })
+    return render(request, "index.html", { "default_question": question.question, "answer": question.answer})
