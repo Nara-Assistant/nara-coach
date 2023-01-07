@@ -58,6 +58,11 @@
           random = ~~(Math.random() * options.length);
 
       $("textarea").val(options[random]);
+      
+      // track click in amplitude
+      analytics.track('Click lucky-button', {
+        content: question
+      });
     });
 
     $("textarea").bind('input propertychange', function(e) {
@@ -87,6 +92,15 @@
       let askButton = document.getElementById("ask-button");
       askButton.textContent = "Asking...";
       askButton.disabled = true;
+      
+      // track click in amplitude
+      const serializedString = $("form").serialize()
+      const searchParams = new URLSearchParams(serializedString);
+      const question = searchParams.get("question");
+
+      analytics.track('Click ask-button', {
+        content: question
+      });
 
       $.ajax({
         type: 'POST',
