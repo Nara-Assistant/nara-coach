@@ -210,3 +210,8 @@ def db(request):
 def question(request, id):
     question = Question.objects.get(pk=id)
     return render(request, "index.html", { "default_question": question.question, "answer": question.answer})
+
+
+def train(request):
+    """ Get pdf urls """
+    urls = [""]
