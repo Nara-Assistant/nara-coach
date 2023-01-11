@@ -11,7 +11,7 @@ class Question(models.Model):
 
 class user_avatars(models.Model):
     created_at = models.DateTimeField("date created", auto_now_add=True, null=True)
-    avatar_id = models.IntegerField(null=True)
+    avatar_id = models.TextField(null=True, blank=True)
     user_id = models.IntegerField(null=True)
 
 class avatars(models.Model):
