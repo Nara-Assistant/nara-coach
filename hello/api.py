@@ -59,8 +59,23 @@ def train(request):
     bucket.upload_file(f"{filename}.embeddings.csv")
     bucket.upload_file(f"{filename}.pages.csv")
 
-    files_model.objects.create(avatar_id=avatar_id, file_url=f"https://nara-files.s3.amazonaws.com/{filename}.embeddings.csv", file_type="EMBEDDINGS" )
-    files_model.objects.create(avatar_id=avatar_id, file_url=f"https://nara-files.s3.amazonaws.com/{filename}.pages.csv", file_type="DATASET" )
+    # TODO: remove old file from s3 bucket
+
+    dataset_db_file = files_model.objects.filter(avatar_id=avatar_id, file_type='DATASET').first()
+    embeddings_db_file = files_model.objects.filter(avatar_id=avatar_id, file_type='EMBEDDINGS').first()
+
+    if dataset_db_file is None:
+        files_model.objects.create(avatar_id=avatar_id, file_url=f"https://nara-files.s3.amazonaws.com/{filename}.pages.csv", file_type="DATASET" )
+    else:
+        dataset_db_file.file_url = f"https://nara-files.s3.amazonaws.com/{filename}.pages.csv"
+        dataset_db_file.save()
+
+    if embeddings_db_file is None:
+        files_model.objects.create(avatar_id=avatar_id, file_url=f"https://nara-files.s3.amazonaws.com/{filename}.embeddings.csv", file_type="EMBEDDINGS" )
+    else:
+        embeddings_db_file.file_url = f"https://nara-files.s3.amazonaws.com/{filename}.embeddings.csv"
+        embeddings_db_file.save()
+
 
     return JsonResponse({ "message": "SUCCESS" })
 
@@ -107,7 +122,7 @@ def ask(request):
     df = pd.read_csv(dataset_filename)
     document_embeddings = utils.load_embeddings(embeddings_filename)
     
-    answer, context = utils.answer_query_with_context(question_asked, df, document_embeddings)
+    answer, context = utils.answer_query_with_context(question_asked, df, document_embeddings, _avatar)
 
     project_uuid = '925953bd'
     voice_uuid = '9d89e4b3-george'
@@ -121,4 +136,5 @@ def ask(request):
         
     print("men")
     return JsonResponse({ "message": "SUCCESS", "data": { "question": question_asked, "answer": answer, "audio_src_url": "" }})
-        
+
+    
