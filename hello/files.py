@@ -1,14 +1,9 @@
-from dotenv import load_dotenv
-import os
-
-# Use load_env to trace the path of .env:
-load_dotenv('.env')
 import requests
 
-def download_pdf(url):
+def download_file(url, name):
     r = requests.get(url, stream=True)
     print(r.content)
-    with open(f'metadata.pdf', 'wb') as fd:
+    with open(f"{name}", 'wb') as fd:
         for chunk in r.iter_content(2000):
             fd.write(chunk)
 

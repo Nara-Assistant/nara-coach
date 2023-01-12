@@ -15,6 +15,7 @@ class user_avatars(models.Model):
     user_id = models.TextField(null=True, blank=True)
 
 class avatars(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     created_at = models.DateTimeField("date created", auto_now_add=True, null=True)
     name = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -27,3 +28,4 @@ class files(models.Model):
     created_at = models.DateTimeField("date created", auto_now_add=True, null=True)
     avatar_id = models.IntegerField(null=True)
     file_url = models.CharField(default="", max_length=255, null=True, blank=True)
+    file_type = models.CharField(default="TRAINING", max_length=255, null=True, blank=True)
