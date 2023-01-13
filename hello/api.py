@@ -5,7 +5,8 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from dotenv import load_dotenv
 
-from .models import Question, avatars, files as files_model
+from .models import Question, avatars, files as files_model, Users, Sessions
+from .decorators import supabase_auth_decorator
 
 import pandas as pd
 import openai
@@ -22,6 +23,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import urlparse
 from django.core import serializers
+import jwt
 
 load_dotenv('.env')
 
@@ -137,4 +139,19 @@ def ask(request):
     print("men")
     return JsonResponse({ "message": "SUCCESS", "data": { "question": question_asked, "answer": answer, "audio_src_url": "" }})
 
-    
+@csrf_exempt
+@supabase_auth_decorator
+def get_users(request):
+    try:
+        user_id, session_id = request.supabase_data["user_id"], request.supabase_data["session_id"]
+        users = Users.objects.filter(id=user_id).values().first()
+        session = Sessions.objects.filter(user_id = user_id, id = session_id).values().first()
+        return JsonResponse({ "message": "SUCCESS", "data": {
+            "user": {
+                **users,
+                'session': session
+            }
+        }})
+    except Exception as e:
+        print(e)
+        return JsonResponse({ "message": "ERROR"})

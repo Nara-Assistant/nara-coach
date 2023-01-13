@@ -29,3 +29,18 @@ class files(models.Model):
     avatar_id = models.IntegerField(null=True)
     file_url = models.CharField(default="", max_length=255, null=True, blank=True)
     file_type = models.CharField(default="TRAINING", max_length=255, null=True, blank=True)
+
+class Users(models.Model):
+    id = models.CharField(default="", max_length=255, primary_key=True)
+    aud = models.CharField(default="", max_length=255, null=True, blank=True)
+    role = models.CharField(default="TRAINING", max_length=255, null=True, blank=True)
+
+    class Meta:
+        db_table = '"auth"."users"'
+
+class Sessions(models.Model):
+    id = models.CharField(default="", max_length=255, primary_key=True)
+    user_id = models.CharField(default="", max_length=255, null=True, blank=True)
+
+    class Meta:
+        db_table = '"auth"."sessions"'

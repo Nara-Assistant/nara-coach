@@ -12,3 +12,4 @@ python-dotenv>=0.21.0
 transformers>=4.25.1
 pypdf2>=3.0.1
 boto3
+pyjwt
