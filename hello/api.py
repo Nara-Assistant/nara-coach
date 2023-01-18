@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from dotenv import load_dotenv
 
-from .models import Question, avatars, files as files_model, Users, Sessions
+from .models import Question, avatars, files as files_model, Users, Sessions, Prompts, user_avatars
 from .decorators import supabase_auth_decorator
 
 import pandas as pd
@@ -124,7 +124,11 @@ def ask(request):
     df = pd.read_csv(dataset_filename)
     document_embeddings = utils.load_embeddings(embeddings_filename)
     
-    answer, context = utils.answer_query_with_context(question_asked, df, document_embeddings, _avatar)
+    prompts = Prompts.objects.filter(avatar_id=avatar_id).values()
+    questions = [f"\n\n\nQ: {prompt['question']}\n\nA: {prompt['answer']}"for prompt in prompts]
+    built_questions = "".join(questions)
+
+    answer, context = utils.answer_query_with_context(question_asked, df, document_embeddings, _avatar, built_questions)
 
     project_uuid = '925953bd'
     voice_uuid = '9d89e4b3-george'
@@ -139,19 +143,30 @@ def ask(request):
     print("men")
     return JsonResponse({ "message": "SUCCESS", "data": { "question": question_asked, "answer": answer, "audio_src_url": "" }})
 
-@csrf_exempt
-@supabase_auth_decorator
-def get_users(request):
-    try:
-        user_id, session_id = request.supabase_data["user_id"], request.supabase_data["session_id"]
-        users = Users.objects.filter(id=user_id).values().first()
-        session = Sessions.objects.filter(user_id = user_id, id = session_id).values().first()
-        return JsonResponse({ "message": "SUCCESS", "data": {
-            "user": {
-                **users,
-                'session': session
-            }
-        }})
-    except Exception as e:
-        print(e)
-        return JsonResponse({ "message": "ERROR"})
+# @csrf_exempt
+# @supabase_auth_decorator
+# def get_users(request):
+#     try:
+#         user_id, session_id = request.supabase_data["user_id"], request.supabase_data["session_id"]
+#         avatar_path = request.headers['X-AVATAR-PATH']
+#         _avatar = avatars.objects.filter(url_path=avatar_path).values().first()
+
+#         if _avatar is None:
+#             return JsonResponse({"message": "ERROR"}, status = 401)
+
+#         _user_avatar = user_avatars.objects.filter(avatar_id=_avatar["id"], user_id=user_id).values().first()
+
+#         if _user_avatar is None:
+#             return JsonResponse({"message": "ERROR"}, status = 401)
+
+#         users = Users.objects.filter(id=user_id).values().first()
+#         session = Sessions.objects.filter(user_id = user_id, id = session_id).values().first()
+#         return JsonResponse({ "message": "SUCCESS", "data": {
+#             "user": {
+#                 **users,
+#                 'session': session
+#             }
+#         }})
+#     except Exception as e:
+#         print(e)
+#         return JsonResponse({ "message": "ERROR"})

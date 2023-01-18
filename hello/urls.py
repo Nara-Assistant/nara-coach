@@ -22,6 +22,5 @@ urlpatterns = [
     path("db", hello.views.db, name="db"),
     path("admin/", admin.site.urls),
     path("api/train", hello.api.train, name="train"),
-    path("api/ask", hello.api.ask, name="ask"),
-    path("api/users", hello.api.get_users, name="get_users")
+    path("api/ask", hello.api.ask, name="ask")
 ]
