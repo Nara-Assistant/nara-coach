@@ -193,7 +193,7 @@ def order_document_sections_by_query_similarity(query: str, contexts):
 
     return document_similarities
 
-def construct_prompt(question: str, context_embeddings: dict, df: pd.DataFrame, avatar = None, built_questions = None):
+def construct_prompt(question: str, context_embeddings: dict, df: pd.DataFrame, avatar = None, built_questions = None, built_prompts = None):
     """
     Fetch relevant embeddings
     """
@@ -217,16 +217,17 @@ def construct_prompt(question: str, context_embeddings: dict, df: pd.DataFrame, 
         chosen_sections_indexes.append(str(section_index))
 
     #todo: get name and description from avatar
-    header = f"""{avatar['name']}\n{avatar['description']}\nif you're unsure of the answer, say "Sorry, I don't know"\n"""
-
-    return (header + "".join(chosen_sections) + built_questions + "\n\n\nQ: " + question + "\n\nA: "), ("".join(chosen_sections))
+    header = f"""{avatar['name']}.\n{avatar['description']}."""
+    print(built_prompts)
+    return (header + built_prompts + "".join(chosen_sections) + built_questions + "\n\n\nQ: " + question + "\n\nA: "), ("".join(chosen_sections))
 
 def answer_query_with_context(
     query: str,
     df: pd.DataFrame,
     document_embeddings,
     avatart = None,
-    built_questions = None
+    built_questions = None,
+    built_prompts = None
 ):
     print("before 1")
     prompt, context = construct_prompt(
@@ -234,7 +235,8 @@ def answer_query_with_context(
         document_embeddings,
         df,
         avatart,
-        built_questions
+        built_questions,
+        built_prompts
     )
     print("before 2")
     print("===\n", prompt)

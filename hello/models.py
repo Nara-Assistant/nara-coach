@@ -30,11 +30,16 @@ class files(models.Model):
     file_url = models.CharField(default="", max_length=255, null=True, blank=True)
     file_type = models.CharField(default="TRAINING", max_length=255, null=True, blank=True)
 
-class Prompts(models.Model):
+class PresetQuestions(models.Model):
     created_at = models.DateTimeField("date created", auto_now_add=True, null=True)
     avatar_id = models.IntegerField(null=True)
     question = models.TextField(null=True, blank=True)
     answer = models.TextField(null=True, blank=True)
+
+class Prompts(models.Model):
+    created_at = models.DateTimeField("date created", auto_now_add=True, null=True)
+    avatar_id = models.IntegerField(null=True)
+    value = models.TextField(null=True, blank=True)
 
 class Users(models.Model):
     id = models.CharField(default="", max_length=255, primary_key=True)

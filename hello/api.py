@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from dotenv import load_dotenv
 
-from .models import Question, avatars, files as files_model, Users, Sessions, Prompts, user_avatars
+from .models import Question, avatars, files as files_model, Users, Sessions, PresetQuestions, user_avatars, Prompts
 from .decorators import supabase_auth_decorator
 
 import pandas as pd
@@ -124,11 +124,15 @@ def ask(request):
     df = pd.read_csv(dataset_filename)
     document_embeddings = utils.load_embeddings(embeddings_filename)
     
-    prompts = Prompts.objects.filter(avatar_id=avatar_id).values()
-    questions = [f"\n\n\nQ: {prompt['question']}\n\nA: {prompt['answer']}"for prompt in prompts]
+    preset_questions = PresetQuestions.objects.filter(avatar_id=avatar_id).values()
+    questions = [f"\n\n\nQ: {preset_question['question']}\n\nA: {preset_question['answer']}"for preset_question in preset_questions]
     built_questions = "".join(questions)
 
-    answer, context = utils.answer_query_with_context(question_asked, df, document_embeddings, _avatar, built_questions)
+    prompts = Prompts.objects.filter(avatar_id=avatar_id).values()
+    questions = [f" {prompt['value']}."for prompt in prompts]
+    built_prompts= "".join(questions)
+
+    answer, context = utils.answer_query_with_context(question_asked, df, document_embeddings, _avatar, built_questions, built_prompts)
 
     project_uuid = '925953bd'
     voice_uuid = '9d89e4b3-george'
