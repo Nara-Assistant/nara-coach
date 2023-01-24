@@ -197,7 +197,7 @@ def ask(request):
 
     question = Question(question=question_asked, answer=answer, context=context)
     print("hola7")
-    question.save()
+    # question.save()
     print("hola8")
     return JsonResponse({ "question": question.question, "answer": answer, "audio_src_url": "", "id": question.pk })
 
