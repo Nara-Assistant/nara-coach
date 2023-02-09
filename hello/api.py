@@ -147,6 +147,62 @@ def ask(request):
     print("men")
     return JsonResponse({ "message": "SUCCESS", "data": { "question": question_asked, "answer": answer, "audio_src_url": "" }})
 
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def get_prompt(request):
+    """ Get pdf urls """
+
+    avatar_path = request.headers['X-AVATAR-PATH']
+    _avatar = avatars.objects.filter(url_path=avatar_path).values().first()
+
+    if _avatar is None:
+        print("404")
+        # return 404
+
+    avatar_id = _avatar["id"]
+
+    # Get urls from database
+    dataset_url = files_model.objects.filter(avatar_id=avatar_id, file_type='DATASET').values().first()["file_url"]
+    embeddings_url = files_model.objects.filter(avatar_id=avatar_id, file_type='EMBEDDINGS').values().first()["file_url"]
+    print((dataset_url, embeddings_url))
+    dataset_filename = get_file_from_url(dataset_url)
+    embeddings_filename = get_file_from_url(embeddings_url)
+    #download files
+    
+    download_csv(dataset_url, dataset_filename)
+    download_csv(embeddings_url, embeddings_filename)
+    question_asked = json.loads(request.body)["question"]
+   
+    if not question_asked.endswith('?'):
+        question_asked += '?'
+
+  
+    previous_question = Question.objects.filter(question=question_asked).first()
+
+    df = pd.read_csv(dataset_filename)
+    document_embeddings = utils.load_embeddings(embeddings_filename)
+    
+    preset_questions = PresetQuestions.objects.filter(avatar_id=avatar_id).values()
+    questions = [f"\n\n\nQ: {preset_question['question']}\n\nA: {preset_question['answer']}"for preset_question in preset_questions]
+    built_questions = "".join(questions)
+
+    prompts = Prompts.objects.filter(avatar_id=avatar_id).values()
+    questions = [f" {prompt['value']}."for prompt in prompts]
+    built_prompts= "".join(questions)
+
+    prompt, context = utils.construct_prompt(
+        question_asked, 
+        document_embeddings, 
+        df, 
+        _avatar, 
+        built_questions, 
+        built_prompts
+    )
+
+    return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt, "context": context }})
+
+
 # @csrf_exempt
 # @supabase_auth_decorator
 # def get_users(request):
@@ -174,3 +230,21 @@ def ask(request):
 #     except Exception as e:
 #         print(e)
 #         return JsonResponse({ "message": "ERROR"})
+
+
+# from django.db import connection
+
+# @csrf_exempt
+# def test(request):
+#     try:
+#         questions = Question.objects.raw("SELECT setval('hello_question_id_seq', (SELECT MAX(id) from hello_question)) as id;")
+#         # for question in questions:
+#         #     print(question)
+        
+#         question = Question(question="hola", answer="hola", context="")
+#         question.save() 
+#         return JsonResponse({ "message": "SUCCESS" })
+#     except Exception as e:
+#         print(e)
+#         print(connection.queries)
+#         return JsonResponse({ "message": "ERROR" })
