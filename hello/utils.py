@@ -219,9 +219,9 @@ def construct_prompt(question: str, context_embeddings: dict, df: pd.DataFrame, 
     #todo: get name and description from avatar
     header = f"""{avatar['name']}.\n{avatar['description']}."""
     print(built_prompts)
-    if should_include_prompt is True
+    if should_include_prompt is True:
         return (header + built_prompts + "".join(chosen_sections) + built_questions + "\n\n\nQ: " + question + "\n\nA: "), ("".join(chosen_sections))
-    else 
+    else:
         return (header + built_prompts + "".join(chosen_sections) + built_questions), ("".join(chosen_sections))
 
 def answer_query_with_context(
