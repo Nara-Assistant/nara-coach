@@ -197,10 +197,11 @@ def get_prompt(request):
         df, 
         _avatar, 
         built_questions, 
-        built_prompts
+        built_prompts,
+        False
     )
 
-    return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt, "context": context }})
+    return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
 
 
 # @csrf_exempt

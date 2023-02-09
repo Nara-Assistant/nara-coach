@@ -193,7 +193,7 @@ def order_document_sections_by_query_similarity(query: str, contexts):
 
     return document_similarities
 
-def construct_prompt(question: str, context_embeddings: dict, df: pd.DataFrame, avatar = None, built_questions = None, built_prompts = None):
+def construct_prompt(question: str, context_embeddings: dict, df: pd.DataFrame, avatar = None, built_questions = None, built_prompts = None, should_include_prompt = True):
     """
     Fetch relevant embeddings
     """
@@ -219,7 +219,10 @@ def construct_prompt(question: str, context_embeddings: dict, df: pd.DataFrame, 
     #todo: get name and description from avatar
     header = f"""{avatar['name']}.\n{avatar['description']}."""
     print(built_prompts)
-    return (header + built_prompts + "".join(chosen_sections) + built_questions + "\n\n\nQ: " + question + "\n\nA: "), ("".join(chosen_sections))
+    if should_include_prompt is True
+        return (header + built_prompts + "".join(chosen_sections) + built_questions + "\n\n\nQ: " + question + "\n\nA: "), ("".join(chosen_sections))
+    else 
+        return (header + built_prompts + "".join(chosen_sections) + built_questions), ("".join(chosen_sections))
 
 def answer_query_with_context(
     query: str,
