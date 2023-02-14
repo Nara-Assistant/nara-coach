@@ -212,14 +212,28 @@ def handle_uploaded_file(f):
 @csrf_exempt
 def image_upload(request):
     try:
-        handle_uploaded_file(request.FILES['file'])  
-        
-        return JsonResponse({ "message": "SUCCESS", "data": {
-            "text": utils.get_text_from_image(request.FILES['file'].name)
-        }})
+        url = json.loads(request.body).get("url")
+
+        if url is not None:
+            ts = time.time()
+            a = urlparse(url)
+            filename = f"{ts}-{os.path.basename(a.path)}"
+            file_module.download_file(url, filename)
+
+            return JsonResponse({ "message": "SUCCESS", "data": {
+                "text": utils.get_text_from_image(filename)
+            }})
+        else:
+            handle_uploaded_file(request.FILES['file'])  
+            
+            return JsonResponse({ "message": "SUCCESS", "data": {
+                "text": utils.get_text_from_image(request.FILES['file'].name)
+            }})
+
     except Exception as e:
         print(e)
         return JsonResponse({ "message": "ERROR"})
+
 
 # @csrf_exempt
 # @supabase_auth_decorator
