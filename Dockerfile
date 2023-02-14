@@ -4,9 +4,9 @@ WORKDIR /app
 
 COPY . .
 
-# ENV U2NET_HOME=/app/unet
+ENV U2NET_HOME=/app/.u2net/u2net.onnx
 
-# RUN wget https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx -O /app/unet
+RUN wget https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx -O /app/.u2net/u2net.onnx
 RUN apt-get update 
 RUN apt-get -y install tesseract-ocr
 RUN apt-get -y install libtesseract-dev
