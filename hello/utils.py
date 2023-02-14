@@ -258,7 +258,7 @@ def answer_query_with_context(
 
 # utils.create_files()
 
-from rembg import remove
+from rembg import remove, new_session
 
 def remove_background(input_image):
     input_path = input_image
@@ -267,7 +267,7 @@ def remove_background(input_image):
     with open(input_path, 'rb') as i:
         with open(output_path, 'wb') as o:
             input = i.read()
-            output = remove(input)
+            output = remove(input, session=new_session("silueta"))
             o.write(output)
 
     return output_path
