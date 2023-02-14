@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
+from django import forms
 from dotenv import load_dotenv
 
 from .models import Question, avatars, files as files_model, Users, Sessions, PresetQuestions, user_avatars, Prompts
@@ -203,6 +204,22 @@ def get_prompt(request):
 
     return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
 
+def handle_uploaded_file(f):  
+    with open(f.name, 'wb+') as destination:  
+        for chunk in f.chunks():  
+            destination.write(chunk)  
+
+@csrf_exempt
+def image_upload(request):
+    try:
+        handle_uploaded_file(request.FILES['file'])  
+        
+        return JsonResponse({ "message": "SUCCESS", "data": {
+            "text": utils.get_text_from_image(request.FILES['file'].name)
+        }})
+    except Exception as e:
+        print(e)
+        return JsonResponse({ "message": "ERROR"})
 
 # @csrf_exempt
 # @supabase_auth_decorator

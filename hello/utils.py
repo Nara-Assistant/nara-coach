@@ -253,5 +253,45 @@ def answer_query_with_context(
 
 # create_files_by_dataframe(files_to_datasets(["book.pdf", "metadata.pdf"]), "new")
 
+# import hello.utils as utils
 
+
+# utils.create_files()
+
+from rembg import remove
+
+def remove_background(input_image):
+    input_path = input_image
+    output_path = f"cleaned-{input_image}"
+
+    with open(input_path, 'rb') as i:
+        with open(output_path, 'wb') as o:
+            input = i.read()
+            output = remove(input)
+            o.write(output)
+
+    return output_path
+
+
+
+
+from PIL import Image
+from pytesseract import pytesseract
+
+def get_text_from_image(image_path): 
+    # Defining paths to tesseract.exe
+    # and the image we would be using
+    final_path = rf"{image_path}"
+    
+    # Opening the image & storing it in an image object
+    # img = Image.open(remove_background(final_path))
+    img = Image.open(final_path)
+    # Providing the tesseract executable
+    # location to pytesseract library
+    
+    # Passing the image object to image_to_string() function
+    # This function will extract the text from the image
+    text = pytesseract.image_to_string(img)
+
+    return text[:-1]
 

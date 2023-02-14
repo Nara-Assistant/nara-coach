@@ -23,6 +23,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/train", hello.api.train, name="train"),
     path("api/ask", hello.api.ask, name="ask"),
+    path("api/image/upload", hello.api.image_upload, name="image_upload"),
     path("api/prompt/build", hello.api.get_prompt, name="build-prompt"),
     
     # path("api/test", hello.api.test, name="test")
