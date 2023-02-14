@@ -258,19 +258,19 @@ def answer_query_with_context(
 
 # utils.create_files()
 
-from rembg import remove
+# from rembg import remove
 
-def remove_background(input_image):
-    input_path = input_image
-    output_path = f"cleaned-{input_image}"
+# def remove_background(input_image):
+#     input_path = input_image
+#     output_path = f"cleaned-{input_image}"
 
-    with open(input_path, 'rb') as i:
-        with open(output_path, 'wb') as o:
-            input = i.read()
-            output = remove(input)
-            o.write(output)
+#     with open(input_path, 'rb') as i:
+#         with open(output_path, 'wb') as o:
+#             input = i.read()
+#             output = remove(input)
+#             o.write(output)
 
-    return output_path
+#     return output_path
 
 
 
