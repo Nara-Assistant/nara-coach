@@ -14,3 +14,4 @@ pypdf2>=3.0.1
 boto3
 pyjwt
 pytesseract
+rembg

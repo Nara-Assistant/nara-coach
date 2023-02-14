@@ -6,7 +6,7 @@ COPY . .
 
 ENV U2NET_HOME=/app/unet
 
-# RUN wget https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx -O /app/unet
+RUN wget https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx -O /app/unet
 RUN apt-get update 
 RUN apt-get -y install tesseract-ocr
 RUN apt-get -y install libtesseract-dev

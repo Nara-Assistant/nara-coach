@@ -258,19 +258,19 @@ def answer_query_with_context(
 
 # utils.create_files()
 
-# from rembg import remove
+from rembg import remove
 
-# def remove_background(input_image):
-#     input_path = input_image
-#     output_path = f"cleaned-{input_image}"
+def remove_background(input_image):
+    input_path = input_image
+    output_path = f"cleaned-{input_image}"
 
-#     with open(input_path, 'rb') as i:
-#         with open(output_path, 'wb') as o:
-#             input = i.read()
-#             output = remove(input)
-#             o.write(output)
+    with open(input_path, 'rb') as i:
+        with open(output_path, 'wb') as o:
+            input = i.read()
+            output = remove(input)
+            o.write(output)
 
-#     return output_path
+    return output_path
 
 
 
@@ -284,8 +284,8 @@ def get_text_from_image(image_path):
     final_path = rf"{image_path}"
     
     # Opening the image & storing it in an image object
-    # img = Image.open(remove_background(final_path))
-    img = Image.open(final_path)
+    img = Image.open(remove_background(final_path))
+    # img = Image.open(final_path)
     # Providing the tesseract executable
     # location to pytesseract library
     
