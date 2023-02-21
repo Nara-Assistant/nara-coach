@@ -360,8 +360,8 @@ def build_prompt_for_diet(diet_type):
 @require_http_methods(["POST"])
 def get_prompt_v2(request):
     """ Get pdf urls """
-    diet_type = request.headers['X-DIET-TYPE']
-    avatar_path = request.headers['X-AVATAR-PATH']
+    diet_type = request.headers.get('X-DIET-TYPE')
+    avatar_path = request.headers.get('X-AVATAR-PATH')
 
     if avatar_path is not None:
         return build_prompt_for_avatar(avatar_path)
