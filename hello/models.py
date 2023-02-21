@@ -24,6 +24,15 @@ class avatars(models.Model):
     status = models.TextField(null=True, blank=True)
     image_url = models.TextField(null=True, blank=True)
 
+class diets(models.Model):
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
+    created_at = models.DateTimeField("date created", auto_now_add=True, null=True)
+    name = models.TextField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    visibility = models.TextField(null=True, blank=True)
+    diet_type = models.TextField(null=True, blank=True)
+    status = models.TextField(null=True, blank=True)
+
 class files(models.Model):
     created_at = models.DateTimeField("date created", auto_now_add=True, null=True)
     avatar_id = models.IntegerField(null=True)

@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django import forms
 from dotenv import load_dotenv
 
-from .models import Question, avatars, files as files_model, Users, Sessions, PresetQuestions, user_avatars, Prompts
+from .models import Question, avatars, diets, files as files_model, Users, Sessions, PresetQuestions, user_avatars, Prompts
 from .decorators import supabase_auth_decorator
 
 import pandas as pd
@@ -83,6 +83,63 @@ def train(request):
     return JsonResponse({ "message": "SUCCESS" })
 
 
+@csrf_exempt
+@require_http_methods(["POST"])
+def train_diet(request):
+    """ Get pdf urls """
+    diet_type = request.headers['X-DIET-TYPE']
+    # Get diet type from db
+    _diet = diets.objects.filter(diet_type=diet_type).values().first()
+
+    if _diet is None:
+        print("404")
+        # return 404
+
+    # Get urls from database
+    diet_id = _diet["id"]
+    print(diet_id)
+    files_values = files_model.objects.filter(avatar_id=diet_id, file_type='DIET_TRAINING').values()
+    print(files_values)
+    urls = [ x["file_url"] for x in files_values]
+    print("llega2")
+    ts = time.time()
+    filename = f"diet-{diet_id}-{ts}"
+    files = []
+
+    #download files
+    for url in urls:
+        a = urlparse(url)
+        files.append(f"{filename}-{os.path.basename(a.path)}")
+        file_module.download_file(url, f"{filename}-{os.path.basename(a.path)}")
+   
+    
+    dfs = utils.files_to_datasets(files)
+    utils.create_files_by_dataframe(dfs, filename)
+    bucket.upload_file(f"{filename}.embeddings.csv")
+    bucket.upload_file(f"{filename}.pages.csv")
+
+    # TODO: remove old file from s3 bucket
+
+    dataset_db_file = files_model.objects.filter(avatar_id=diet_id, file_type='DIET_DATASET').first()
+    embeddings_db_file = files_model.objects.filter(avatar_id=diet_id, file_type='DIET_EMBEDDINGS').first()
+
+    if dataset_db_file is None:
+        files_model.objects.create(avatar_id=diet_id, file_url=f"https://nara-files.s3.amazonaws.com/{filename}.pages.csv", file_type="DIET_DATASET" )
+    else:
+        dataset_db_file.file_url = f"https://nara-files.s3.amazonaws.com/{filename}.pages.csv"
+        dataset_db_file.save()
+
+    if embeddings_db_file is None:
+        files_model.objects.create(avatar_id=diet_id, file_url=f"https://nara-files.s3.amazonaws.com/{filename}.embeddings.csv", file_type="DIET_EMBEDDINGS" )
+    else:
+        embeddings_db_file.file_url = f"https://nara-files.s3.amazonaws.com/{filename}.embeddings.csv"
+        embeddings_db_file.save()
+
+
+    return JsonResponse({ "message": "SUCCESS" })
+
+
+
 def get_file_from_url(url):
     a = urlparse(url)
     return f"{os.path.basename(a.path)}"
@@ -148,7 +205,6 @@ def ask(request):
     print("men")
     return JsonResponse({ "message": "SUCCESS", "data": { "question": question_asked, "answer": answer, "audio_src_url": "" }})
 
-
 @csrf_exempt
 @require_http_methods(["POST"])
 def get_prompt(request):
@@ -203,6 +259,118 @@ def get_prompt(request):
     )
 
     return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
+
+def build_prompt_for_avatar(avatar_path):
+    _avatar = avatars.objects.filter(url_path=avatar_path).values().first()
+
+    if _avatar is None:
+        print("404")
+        # return 404
+
+    avatar_id = _avatar["id"]
+
+    # Get urls from database
+    dataset_url = files_model.objects.filter(avatar_id=avatar_id, file_type='DATASET').values().first()["file_url"]
+    embeddings_url = files_model.objects.filter(avatar_id=avatar_id, file_type='EMBEDDINGS').values().first()["file_url"]
+    print((dataset_url, embeddings_url))
+    dataset_filename = get_file_from_url(dataset_url)
+    embeddings_filename = get_file_from_url(embeddings_url)
+    #download files
+    
+    download_csv(dataset_url, dataset_filename)
+    download_csv(embeddings_url, embeddings_filename)
+    question_asked = json.loads(request.body)["question"]
+   
+    if not question_asked.endswith('?'):
+        question_asked += '?'
+
+  
+    previous_question = Question.objects.filter(question=question_asked).first()
+
+    df = pd.read_csv(dataset_filename)
+    document_embeddings = utils.load_embeddings(embeddings_filename)
+    
+    preset_questions = PresetQuestions.objects.filter(avatar_id=avatar_id).values()
+    questions = [f"\n\n\nQ: {preset_question['question']}\n\nA: {preset_question['answer']}"for preset_question in preset_questions]
+    built_questions = "".join(questions)
+
+    prompts = Prompts.objects.filter(avatar_id=avatar_id).values()
+    prompt_questions = [f" {prompt['value']}."for prompt in prompts]
+    built_prompts= "".join(prompt_questions)
+
+    prompt, context = utils.construct_prompt(
+        question_asked, 
+        document_embeddings, 
+        df, 
+        _avatar, 
+        built_questions, 
+        built_prompts,
+        False
+    )
+
+    return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
+
+def build_prompt_for_diet(diet_type):
+    _diet = diets.objects.filter(diet_type=diet_type).values().first()
+
+    if _diet is None:
+        print("404")
+        # return 404
+
+    diet_id = _diet["id"]
+
+    # Get urls from database
+    dataset_url = files_model.objects.filter(avatar_id=diet_id, file_type='DIET_DATASET').values().first()["file_url"]
+    embeddings_url = files_model.objects.filter(avatar_id=diet_id, file_type='DIET_EMBEDDINGS').values().first()["file_url"]
+    print((dataset_url, embeddings_url))
+    dataset_filename = get_file_from_url(dataset_url)
+    embeddings_filename = get_file_from_url(embeddings_url)
+    #download files
+    
+    download_csv(dataset_url, dataset_filename)
+    download_csv(embeddings_url, embeddings_filename)
+    question_asked = json.loads(request.body)["question"]
+   
+    if not question_asked.endswith('?'):
+        question_asked += '?'
+
+  
+    previous_question = Question.objects.filter(question=question_asked).first()
+
+    df = pd.read_csv(dataset_filename)
+    document_embeddings = utils.load_embeddings(embeddings_filename)
+
+    built_questions = ""
+    built_prompts= ""
+
+    prompt, context = utils.construct_prompt(
+        question_asked, 
+        document_embeddings, 
+        df, 
+        _avatar, 
+        built_questions, 
+        built_prompts,
+        False
+    )
+
+    return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def get_prompt_v2(request):
+    """ Get pdf urls """
+    diet_type = request.headers['X-DIET-TYPE']
+    avatar_path = request.headers['X-AVATAR-PATH']
+
+    if avatar_path is not None:
+        return build_prompt_for_avatar(avatar_path)
+    elif diet_type is not None:
+        return build_prompt_for_diet(diet_type)
+    else:
+        return JsonResponse({ "message": "ERROR" }, status = 404)
+
+
 
 def handle_uploaded_file(f):  
     with open(f.name, 'wb+') as destination:  
