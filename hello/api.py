@@ -337,7 +337,7 @@ def build_prompt_for_diet(diet_type, question_asked):
         question_asked, 
         document_embeddings, 
         df, 
-        _avatar, 
+        _diet, 
         built_questions, 
         built_prompts,
         False
