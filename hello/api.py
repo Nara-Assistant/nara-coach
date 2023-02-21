@@ -260,7 +260,7 @@ def get_prompt(request):
 
     return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
 
-def build_prompt_for_avatar(avatar_path):
+def build_prompt_for_avatar(avatar_path, question_asked):
     _avatar = avatars.objects.filter(url_path=avatar_path).values().first()
 
     if _avatar is None:
@@ -279,12 +279,7 @@ def build_prompt_for_avatar(avatar_path):
     
     download_csv(dataset_url, dataset_filename)
     download_csv(embeddings_url, embeddings_filename)
-    question_asked = json.loads(request.body)["question"]
-   
-    if not question_asked.endswith('?'):
-        question_asked += '?'
 
-  
     previous_question = Question.objects.filter(question=question_asked).first()
 
     df = pd.read_csv(dataset_filename)
@@ -310,7 +305,7 @@ def build_prompt_for_avatar(avatar_path):
 
     return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
 
-def build_prompt_for_diet(diet_type):
+def build_prompt_for_diet(diet_type, question_asked):
     _diet = diets.objects.filter(diet_type=diet_type).values().first()
 
     if _diet is None:
@@ -329,12 +324,7 @@ def build_prompt_for_diet(diet_type):
     
     download_csv(dataset_url, dataset_filename)
     download_csv(embeddings_url, embeddings_filename)
-    question_asked = json.loads(request.body)["question"]
-   
-    if not question_asked.endswith('?'):
-        question_asked += '?'
 
-  
     previous_question = Question.objects.filter(question=question_asked).first()
 
     df = pd.read_csv(dataset_filename)
@@ -364,10 +354,15 @@ def get_prompt_v2(request):
         diet_type = request.headers.get('X-DIET-TYPE')
         avatar_path = request.headers.get('X-AVATAR-PATH')
 
+        question_asked = json.loads(request.body)["question"]
+   
+        if not question_asked.endswith('?'):
+            question_asked += '?'
+
         if avatar_path is not None:
-            return build_prompt_for_avatar(avatar_path)
+            return build_prompt_for_avatar(avatar_path, question_asked)
         elif diet_type is not None:
-            return build_prompt_for_diet(diet_type)
+            return build_prompt_for_diet(diet_type, question_asked)
         else:
             return JsonResponse({ "message": "ERROR" }, status = 400)
     except Exception as e:
