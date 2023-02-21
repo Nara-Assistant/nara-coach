@@ -360,15 +360,20 @@ def build_prompt_for_diet(diet_type):
 @require_http_methods(["POST"])
 def get_prompt_v2(request):
     """ Get pdf urls """
-    diet_type = request.headers.get('X-DIET-TYPE')
-    avatar_path = request.headers.get('X-AVATAR-PATH')
+    try:
+        diet_type = request.headers.get('X-DIET-TYPE')
+        avatar_path = request.headers.get('X-AVATAR-PATH')
 
-    if avatar_path is not None:
-        return build_prompt_for_avatar(avatar_path)
-    elif diet_type is not None:
-        return build_prompt_for_diet(diet_type)
-    else:
-        return JsonResponse({ "message": "ERROR" }, status = 404)
+        if avatar_path is not None:
+            return build_prompt_for_avatar(avatar_path)
+        elif diet_type is not None:
+            return build_prompt_for_diet(diet_type)
+        else:
+            return JsonResponse({ "message": "ERROR" }, status = 400)
+    except Exception as e:
+        print(e)
+        return JsonResponse({ "message": "ERROR"}, status = 500)
+
 
 
 
