@@ -157,7 +157,7 @@ def create_files_by_dataframe(df, filename):
             writer.writerow(["Page " + str(i + 1)] + embedding)
 
 
-def load_embeddings(fname: str):
+def old_load_embeddings(fname: str):
     """
     Read the document embeddings and their keys from a CSV.
 
@@ -169,6 +169,20 @@ def load_embeddings(fname: str):
     max_dim = max([int(c) for c in df.columns if c != "title"])
     return {
            (r.title): [r[str(i)] for i in range(max_dim + 1)] for _, r in df.iterrows()
+    }
+
+def load_embeddings(fname: str):
+    """
+    Read the document embeddings and their keys from a CSV.
+
+    fname is the path to a CSV with exactly these named columns:
+        "title", "0", "1", ... up to the length of the embedding vectors.
+    """
+
+    df = pd.read_csv(fname, header=0)
+    max_dim = len(df.columns[df.columns != "title"]) - 1
+    return {
+           (r.title): [*r[1:(max_dim + 2)]] for _, r in df.iterrows()
     }
 
 def vector_similarity(x, y) -> float:

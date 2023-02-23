@@ -328,12 +328,18 @@ def build_prompt_for_diet(diet_type, question_asked):
     lap_perf("Get urls from database")
     #download files
     
+    def convert(val):
+        if val == np.nan:
+            return 0
+        return val
+
     download_csv(dataset_url, dataset_filename)
     download_csv(embeddings_url, embeddings_filename)
     lap_perf("download files")
     previous_question = Question.objects.filter(question=question_asked).first()
     lap_perf("previous_question")
     df = pd.read_csv(dataset_filename)
+    lap_perf("load_dataset_filename")
     document_embeddings = utils.load_embeddings(embeddings_filename)
     lap_perf("load_embeddings")
     built_questions = ""
