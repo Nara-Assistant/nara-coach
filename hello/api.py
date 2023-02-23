@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from .models import Question, avatars, diets, files as files_model, Users, Sessions, PresetQuestions, user_avatars, Prompts
 from .decorators import supabase_auth_decorator
-import .performance as performance
+from .performance import performance
 
 import pandas as pd
 import openai
