@@ -60,7 +60,7 @@ def extract_pages(
         return []
 
     content = " ".join(page_text.split())
-    print("page text: " + content)
+    # print("page text: " + content)
     outputs = [("Page " + str(index), content, count_tokens(content)+4)]
 
     return outputs
@@ -218,7 +218,7 @@ def construct_prompt(question: str, context_embeddings: dict, df: pd.DataFrame, 
 
     #todo: get name and description from avatar
     header = f"""{avatar['name']}.\n{avatar['description']}."""
-    print(built_prompts)
+    # print(built_prompts)
     if should_include_prompt is True:
         return (header + built_prompts + "".join(chosen_sections) + built_questions + "\n\n\nQ: " + question + "\n\nA: "), ("".join(chosen_sections))
     else:
@@ -232,7 +232,7 @@ def answer_query_with_context(
     built_questions = None,
     built_prompts = None
 ):
-    print("before 1")
+    # print("before 1")
     prompt, context = construct_prompt(
         query,
         document_embeddings,
@@ -241,14 +241,14 @@ def answer_query_with_context(
         built_questions,
         built_prompts
     )
-    print("before 2")
-    print("===\n", prompt)
+    # print("before 2")
+    # print("===\n", prompt)
 
     response = openai.Completion.create(
                 prompt=prompt,
                 **COMPLETIONS_API_PARAMS
             )
-    print(("before 3", response))
+    # print(("before 3", response))
     return response["choices"][0]["text"].strip(" \n"), context
 
 # create_files_by_dataframe(files_to_datasets(["book.pdf", "metadata.pdf"]), "new")

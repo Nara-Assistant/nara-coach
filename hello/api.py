@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 from .models import Question, avatars, diets, files as files_model, Users, Sessions, PresetQuestions, user_avatars, Prompts
 from .decorators import supabase_auth_decorator
+import .performance as performance
 
 import pandas as pd
 import openai
@@ -306,6 +307,9 @@ def build_prompt_for_avatar(avatar_path, question_asked):
     return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
 
 def build_prompt_for_diet(diet_type, question_asked):
+    (start_perf, lap_perf) = performance.perf_checker('NA', 'build_prompt_for_diet')
+
+    start_perf()
     _diet = diets.objects.filter(diet_type=diet_type).values().first()
 
     if _diet is None:
@@ -320,16 +324,18 @@ def build_prompt_for_diet(diet_type, question_asked):
     print((dataset_url, embeddings_url))
     dataset_filename = get_file_from_url(dataset_url)
     embeddings_filename = get_file_from_url(embeddings_url)
+
+    lap_perf("Get urls from database")
     #download files
     
     download_csv(dataset_url, dataset_filename)
     download_csv(embeddings_url, embeddings_filename)
-
+    lap_perf("download files")
     previous_question = Question.objects.filter(question=question_asked).first()
-
+    lap_perf("previous_question")
     df = pd.read_csv(dataset_filename)
     document_embeddings = utils.load_embeddings(embeddings_filename)
-
+    lap_perf("load_embeddings")
     built_questions = ""
     built_prompts= ""
 
@@ -342,7 +348,7 @@ def build_prompt_for_diet(diet_type, question_asked):
         built_prompts,
         False
     )
-
+    lap_perf("construct_prompt")
     return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
 
 
