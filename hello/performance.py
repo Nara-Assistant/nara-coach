@@ -5,6 +5,7 @@
 
 # using time module
 import time
+import sys
 
 def perf_checker(id: str = 'NA', process: str = 'NA'):
     # print(f"{process}:{id}")
@@ -17,6 +18,7 @@ def perf_checker(id: str = 'NA', process: str = 'NA'):
     def lap(step):
         global start_time
         print(f"{process}:{id}:{step} took {time.time() - start_time}")
+        sys.stdout.flush()
         start_time = time.time()
 
     return (start, lap)
