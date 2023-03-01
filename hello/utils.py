@@ -34,7 +34,7 @@ QUERY_EMBEDDINGS_MODEL = f"text-search-{MODEL_NAME}-query-001"
 
 tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 
-MAX_SECTION_LEN = 500
+MAX_SECTION_LEN = 1000
 SEPARATOR = "\n* "
 separator_len = 3
 
@@ -353,7 +353,6 @@ def pinecone_create_files_by_dataframe(df, index_name):
         print(e)
 
 
-limit = MAX_SECTION_LEN
 def pinecone_ask(index_name, query, avatar = None, built_questions = None, built_prompts = None, should_include_prompt = True):
     pinecone.init(
         api_key="ecfb9f43-626e-46fd-86bd-0b936c4ce5f1",
@@ -366,18 +365,24 @@ def pinecone_ask(index_name, query, avatar = None, built_questions = None, built
     contexts = [
         x['metadata']['content'] for x in res['matches']
     ]
-    prompt = ''
-    for i in range(0, len(contexts)):
-        if len(SEPARATOR.join(contexts[:i])) >= limit:
-            prompt = SEPARATOR.join(contexts[:i-1])
+
+    chosen_sections = []
+    chosen_sections_len = 0
+
+    for context_i in contexts:
+        chosen_sections_len += len(context_i) + separator_len
+        print(chosen_sections_len)
+        if chosen_sections_len > MAX_SECTION_LEN:
+            space_left = MAX_SECTION_LEN - chosen_sections_len - len(SEPARATOR)
+            chosen_sections.append(SEPARATOR + context_i[:space_left])
             break
-        elif i == len(contexts)-1:
-            prompt = SEPARATOR.join(contexts)
+
+        chosen_sections.append(SEPARATOR + context_i)
 
     header = f"""{avatar['name']}.\n{avatar['description']}."""
 
     if should_include_prompt is True:
-        return (header + built_prompts + prompt + built_questions + "\n\n\nQ: " + question + "\n\nA: "), (prompt)
+        return (header + built_prompts + "".join(chosen_sections) + built_questions + "\n\n\nQ: " + question + "\n\nA: "), ("".join(chosen_sections))
     else:
-        return (header + built_prompts + prompt + built_questions), (prompt)
+        return (header + built_prompts + "".join(chosen_sections) + built_questions), ("".join(chosen_sections))
 
