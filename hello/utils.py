@@ -345,7 +345,9 @@ def pinecone_create_files_by_dataframe(df, index_name):
         
         to_upsert = list(zip(ids, values, meta_batch))
         # print(to_upsert)
-        index.upsert(vectors=to_upsert)
+        for i_t_u in to_upsert:
+            index.upsert(vectors=[i_t_u])
+        
         print("3")
     except Exception as e:
         print(e)
