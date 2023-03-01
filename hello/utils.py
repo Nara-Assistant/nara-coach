@@ -309,3 +309,73 @@ def get_text_from_image(image_path):
 
     return text[:-1]
 
+
+import pinecone
+
+def pinecone_create_files_by_dataframe(df, index_name):
+    print("0")
+    pinecone.init(
+        api_key="ecfb9f43-626e-46fd-86bd-0b936c4ce5f1",
+        environment="us-east1-gcp"
+    )
+    print("1")
+    doc_embeddings = compute_doc_embeddings(df)
+    ids = [str(key) for key in doc_embeddings.keys()]
+    values = list(doc_embeddings.values())
+
+    try:
+        if index_name not in pinecone.list_indexes():
+            # if does not exist, create index
+            pinecone.create_index(
+                index_name,
+                dimension=4096,
+                metric='cosine',
+                metadata_config={'indexed': ['title']}
+            )
+
+        print("2")
+        index = pinecone.Index(index_name)
+        
+        ## todo map index
+
+        meta_batch = [{
+            'title': x.title,
+            'content': x.content
+        } for _, x in df.iterrows()]
+        
+        to_upsert = list(zip(ids, values, meta_batch))
+        # print(to_upsert)
+        index.upsert(vectors=to_upsert)
+        print("3")
+    except Exception as e:
+        print(e)
+
+
+limit = MAX_SECTION_LEN
+def pinecone_ask(index_name, query, avatar = None, built_questions = None, built_prompts = None, should_include_prompt = True):
+    pinecone.init(
+        api_key="ecfb9f43-626e-46fd-86bd-0b936c4ce5f1",
+        environment="us-east1-gcp"
+    )
+
+    index = pinecone.Index(index_name)
+    query_embedding = get_query_embedding(query)
+    res = index.query(query_embedding, top_k=2, include_metadata=True)
+    contexts = [
+        x['metadata']['content'] for x in res['matches']
+    ]
+    prompt = ''
+    for i in range(0, len(contexts)):
+        if len(SEPARATOR.join(contexts[:i])) >= limit:
+            prompt = SEPARATOR.join(contexts[:i-1])
+            break
+        elif i == len(contexts)-1:
+            prompt = SEPARATOR.join(contexts)
+
+    header = f"""{avatar['name']}.\n{avatar['description']}."""
+
+    if should_include_prompt is True:
+        return (header + built_prompts + prompt + built_questions + "\n\n\nQ: " + question + "\n\nA: "), (prompt)
+    else:
+        return (header + built_prompts + prompt + built_questions), (prompt)
+

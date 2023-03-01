@@ -86,7 +86,7 @@ def train(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-def train_diet(request):
+def native_train_diet(request):
     """ Get pdf urls """
     diet_type = request.headers['X-DIET-TYPE']
     # Get diet type from db
@@ -139,7 +139,53 @@ def train_diet(request):
 
     return JsonResponse({ "message": "SUCCESS" })
 
+@csrf_exempt
+@require_http_methods(["POST"])
+def pinecone_train_diet(request):
+    """ Get pdf urls """
+    print("hello")
+    diet_type = request.headers['X-DIET-TYPE']
+    print(diet_type)
+    # Get diet type from db
+    _diet = diets.objects.filter(diet_type=diet_type).values().first()
 
+    if _diet is None:
+        print("404")
+        # return 404
+
+    # Get urls from database
+    diet_id = _diet["id"]
+    print(diet_id)
+    files_values = files_model.objects.filter(avatar_id=diet_id, file_type='DIET_TRAINING').values()
+    print(files_values)
+    urls = [ x["file_url"] for x in files_values]
+    print("llega2")
+    ts = time.time()
+    filename = f"diet-{diet_id}-{ts}"
+    files = []
+
+    #download files
+    for url in urls:
+        a = urlparse(url)
+        files.append(f"{filename}-{os.path.basename(a.path)}")
+        file_module.download_file(url, f"{filename}-{os.path.basename(a.path)}")
+
+    dfs = utils.files_to_datasets(files)
+
+    utils.pinecone_create_files_by_dataframe(dfs, f"{diet_id}-{diet_type.lower()}".replace('_', '-'))
+
+    return JsonResponse({ "message": "SUCCESS" })
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def train_diet(request):
+    engine = request.headers.get('X-ENGINE')
+
+    if engine == 'pinecone':
+        return pinecone_train_diet(request)
+    else:
+        return native_train_diet(request)
 
 def get_file_from_url(url):
     a = urlparse(url)
@@ -261,7 +307,7 @@ def get_prompt(request):
 
     return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
 
-def build_prompt_for_avatar(avatar_path, question_asked):
+def build_prompt_for_avatar(avatar_path, question_asked, engine = 'native'):
     _avatar = avatars.objects.filter(url_path=avatar_path).values().first()
 
     if _avatar is None:
@@ -306,7 +352,7 @@ def build_prompt_for_avatar(avatar_path, question_asked):
 
     return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
 
-def build_prompt_for_diet(diet_type, question_asked):
+def build_prompt_for_diet_native(diet_type, question_asked):
     (start_perf, lap_perf) = perf_checker('NA', 'build_prompt_for_diet')
 
     start_perf()
@@ -357,12 +403,45 @@ def build_prompt_for_diet(diet_type, question_asked):
     lap_perf("construct_prompt")
     return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
 
+def build_prompt_for_diet_pinecone(diet_type, question_asked):
+    (start_perf, lap_perf) = perf_checker('NA', 'build_prompt_for_diet')
+
+    start_perf()
+    _diet = diets.objects.filter(diet_type=diet_type).values().first()
+
+    if _diet is None:
+        print("404")
+        # return 404
+
+    diet_id = _diet["id"]
+    index_name = f"{diet_id}-{diet_type.lower()}".replace('_', '-')
+    built_questions = ""
+    built_prompts= ""
+    prompt, context = utils.pinecone_ask(
+        index_name, 
+        question_asked,
+        _diet, 
+        built_questions, 
+        built_prompts,
+        False
+    )
+    lap_perf("construct_prompt")
+    return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
+
+
+def build_prompt_for_diet(diet_type, question_asked, engine = 'native'):
+    if engine == 'pinecone':
+        return build_prompt_for_diet_pinecone(diet_type, question_asked)
+    else:
+        return build_prompt_for_diet_native(diet_type, question_asked)
+
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def get_prompt_v2(request):
     """ Get pdf urls """
     try:
+        engine = request.headers.get('X-ENGINE')
         diet_type = request.headers.get('X-DIET-TYPE')
         avatar_path = request.headers.get('X-AVATAR-PATH')
 
@@ -372,11 +451,11 @@ def get_prompt_v2(request):
             question_asked += '?'
 
         if avatar_path is not None:
-            return build_prompt_for_avatar(avatar_path, question_asked)
+            return build_prompt_for_avatar(avatar_path, question_asked, engine)
         elif diet_type is not None:
-            return build_prompt_for_diet(diet_type, question_asked)
+            return build_prompt_for_diet(diet_type, question_asked, engine)
         else:
-            return JsonResponse({ "message": "ERROR" }, status = 400)
+            return JsonResponse({ "message": "ERROR" }, status = 400)  
     except Exception as e:
         print(e)
         return JsonResponse({ "message": "ERROR"}, status = 500)
