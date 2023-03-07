@@ -307,6 +307,11 @@ def get_prompt(request):
 
     return JsonResponse({ "message": "SUCCESS", "data": { "prompt": prompt }})
 
+@csrf_exempt
+@require_http_methods(["GET"])
+def health_check(request):
+    return JsonResponse({ "status": "UP" })
+
 def build_prompt_for_avatar(avatar_path, question_asked, engine = 'native'):
     _avatar = avatars.objects.filter(url_path=avatar_path).values().first()
 
