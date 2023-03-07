@@ -26,7 +26,7 @@ urlpatterns = [
     path("api/image/upload", hello.api.image_upload, name="image_upload"),
     path("api/prompt/build", hello.api.get_prompt, name="build-prompt"),
     path("api/v2/prompt/build", hello.api.get_prompt_v2, name="build_prompt_v2"),
-    path("api/v2/train", hello.api.train_diet, name="train_v2")
+    path("api/v2/train", hello.api.train_diet, name="train_v2"),
     path("api/health-check", hello.api.health_check, name="health_check")
     
     # path("api/test", hello.api.test, name="test")
