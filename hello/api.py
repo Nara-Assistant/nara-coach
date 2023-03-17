@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from .models import Question, avatars, diets, files as files_model, Users, Sessions, PresetQuestions, user_avatars, Prompts
 from .decorators import supabase_auth_decorator
 from .performance import perf_checker
+from .notifications import send_notification
 
 import pandas as pd
 import openai
@@ -181,11 +182,14 @@ def pinecone_train_diet(request):
 @require_http_methods(["POST"])
 def train_diet(request):
     engine = request.headers.get('X-ENGINE')
-
-    if engine == 'pinecone':
-        return pinecone_train_diet(request)
-    else:
-        return native_train_diet(request)
+    try:
+        if engine == 'pinecone':
+            return pinecone_train_diet(request)
+        else:
+            return native_train_diet(request)
+    except Exception as e:
+        send_notification("train_diet", "nara-heroku", [("engine", engine)])
+        raise e
 
 def get_file_from_url(url):
     a = urlparse(url)
@@ -445,13 +449,12 @@ def build_prompt_for_diet(diet_type, question_asked, engine = 'native'):
 @require_http_methods(["POST"])
 def get_prompt_v2(request):
     """ Get pdf urls """
-    try:
-        engine = request.headers.get('X-ENGINE')
-        diet_type = request.headers.get('X-DIET-TYPE')
-        avatar_path = request.headers.get('X-AVATAR-PATH')
+    engine = request.headers.get('X-ENGINE')
+    diet_type = request.headers.get('X-DIET-TYPE')
+    avatar_path = request.headers.get('X-AVATAR-PATH')
 
-        question_asked = json.loads(request.body)["question"]
-   
+    question_asked = json.loads(request.body)["question"]
+    try:
         if not question_asked.endswith('?'):
             question_asked += '?'
 
@@ -463,6 +466,7 @@ def get_prompt_v2(request):
             return JsonResponse({ "message": "ERROR" }, status = 400)  
     except Exception as e:
         print(e)
+        send_notification("get_prompt_v2", "nara-heroku", [("engine", engine), ("diet_type", diet_type), ("avatar_path", avatar_path), ("question_asked", question_asked)])
         return JsonResponse({ "message": "ERROR"}, status = 500)
 
 
