@@ -49,7 +49,7 @@ def send_notification(endpoint, project, data):
         },
         {
         "type": "section",
-        "fields": [{"type": "mrkdwn", "text": f"*{data[0]}:*\n{data[1]}"} for item in data]
+        "fields": [{"type": "mrkdwn", "text": f"*{item[0]}:*\n{item[1]}"} for item in data]
         }
     ],
     "username": "Nara watchbot"
