@@ -218,17 +218,20 @@ def construct_prompt(question: str, context_embeddings: dict, df: pd.DataFrame, 
     chosen_sections_indexes = []
 
     for _, section_index in most_relevant_document_sections:
-        document_section = df.loc[df['title'] == section_index].iloc[0]
+        try:
+            document_section = df.loc[df['title'] == section_index].iloc[0]
 
-        chosen_sections_len += document_section.tokens + separator_len
-        if chosen_sections_len > MAX_SECTION_LEN:
-            space_left = MAX_SECTION_LEN - chosen_sections_len - len(SEPARATOR)
-            chosen_sections.append(SEPARATOR + document_section.content[:space_left])
+            chosen_sections_len += document_section.tokens + separator_len
+            if chosen_sections_len > MAX_SECTION_LEN:
+                space_left = MAX_SECTION_LEN - chosen_sections_len - len(SEPARATOR)
+                chosen_sections.append(SEPARATOR + document_section.content[:space_left])
+                chosen_sections_indexes.append(str(section_index))
+                break
+
+            chosen_sections.append(SEPARATOR + document_section.content)
             chosen_sections_indexes.append(str(section_index))
-            break
-
-        chosen_sections.append(SEPARATOR + document_section.content)
-        chosen_sections_indexes.append(str(section_index))
+        except Exception as e:
+            continue;
 
     #todo: get name and description from avatar
     header = f"""{avatar['name']}.\n{avatar['description']}."""
