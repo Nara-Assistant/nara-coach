@@ -5,6 +5,6 @@ def get_text(filename):
     res = ""
 
     for page in pdf_reader.pages:
-        res += "\n" + page.extract_text()
+        res += "\n" + " ".join(page.extract_text().split())
 
     return res
