@@ -11,7 +11,7 @@ def insert_embeddings(vector, content, file_id, vector_key, tokens):
 
                 vectorString = '[' + ', '.join([str(vectorItem) for vectorItem in vector]) + ']'
                 ## TODO: escape especial caracters before insert
-                cleaned_content = content.replace("'", "''")
+                cleaned_content = content.replace("'", "''''")
                 print(cleaned_content)
                 curs.execute(f"select * from insert_embeddings(Array{vectorString}, E'{cleaned_content}', {file_id}, {vector_key}, {tokens})")
                 results = curs.fetchall()
