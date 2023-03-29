@@ -1,4 +1,6 @@
 from .dbconnect import conn
+import json
+import unicodedata
 
 def insert_embeddings(vector, content, file_id, vector_key, tokens): 
     with conn:
@@ -11,9 +13,13 @@ def insert_embeddings(vector, content, file_id, vector_key, tokens):
 
                 vectorString = '[' + ', '.join([str(vectorItem) for vectorItem in vector]) + ']'
                 ## TODO: escape especial caracters before insert
-                cleaned_content = content.replace("'", "''''")
+                cleaned_content = content.replace("'", "''''").replace("\x00", "")
+                # cleaned_content_en = cleaned_content.encode("ascii", "ignore")
+                # cleaned_de = cleaned_content_en.decode('ascii')
                 print(cleaned_content)
-                curs.execute(f"select * from insert_embeddings(Array{vectorString}, E'{cleaned_content}', {file_id}, {vector_key}, {tokens})")
+                query_e = f"select * from insert_embeddings(Array{vectorString}, E'{cleaned_content}', {file_id}, {vector_key}, {tokens})"
+                print(query_e)
+                curs.execute(query_e)
                 results = curs.fetchall()
 
                 try:
