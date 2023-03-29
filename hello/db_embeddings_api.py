@@ -50,7 +50,7 @@ def train(request):
         for file_to_train in files_to_train:
             db_embeddings_utils.train_db(file_to_train[1], file_to_train[0])
 
-        print(list(to_train))
+        # print(list(to_train))
         return JsonResponse({ "message": "SUCCESS" })
     except Exception as e:
         print(e)

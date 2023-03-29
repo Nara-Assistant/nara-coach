@@ -10,7 +10,8 @@ def insert_embeddings(vector, content, file_id, vector_key, tokens):
                 #     print("Already disconnected")
 
                 vectorString = '[' + ', '.join([str(vectorItem) for vectorItem in vector]) + ']'
-                curs.execute(f"select * from insert_embeddings(Array{vectorString}, E'{content}', {file_id}, {vector_key}, {tokens})")
+                ## TODO: escape especial caracters before insert
+                curs.execute(f"select * from insert_embeddings(Array{vectorString}, E'{content.replace("'", "''")}', {file_id}, {vector_key}, {tokens})")
                 results = curs.fetchall()
 
                 try:
