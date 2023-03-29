@@ -6,6 +6,7 @@ admin.autodiscover()
 
 import hello.views
 import hello.api
+import hello.db_embeddings_api
 
 # To add a new path, first import the app:
 # import blog
@@ -27,7 +28,9 @@ urlpatterns = [
     path("api/prompt/build", hello.api.get_prompt, name="build-prompt"),
     path("api/v2/prompt/build", hello.api.get_prompt_v2, name="build_prompt_v2"),
     path("api/v2/train", hello.api.train_diet, name="train_v2"),
-    path("api/health-check", hello.api.health_check, name="health_check")
+    path("api/health-check", hello.api.health_check, name="health_check"),
+    path("api/v3/prompt/build", hello.db_embeddings_api.get_prompt, name="build_prompt_v3"),
+    path("api/v3/train", hello.db_embeddings_api.train, name="train_v3"),
     
     # path("api/test", hello.api.test, name="test")
 ]

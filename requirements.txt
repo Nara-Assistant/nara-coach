@@ -17,3 +17,4 @@ pytesseract
 rembg
 pinecone-client
 datasets
+tiktoken
