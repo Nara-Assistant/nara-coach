@@ -36,25 +36,30 @@ load_dotenv('.env')
 def train(request):
     """ Get pdf urls """
     try:
-        headers_files_ids = request.headers.get('X-FILES-IDS') or ""
-        file_ids = [int(file_id) for file_id in headers_files_ids.split(",")]
-        # Get diet type from db
-        filesDomain = files_model.objects.filter(id__in=file_ids, file_type__in=["DIET_TRAINING", "TRAINING"]).values().all()
+        avatar_path = request.headers.get('X-AVATAR-PATH') or ""
 
-        if filesDomain is []:
-            return JsonResponse({ "message": "NOT_FOUND" }, status = 404)
-            # return 404
+        # Find the avatar using the avatar_path
+        try:
+            avatar = avatars.objects.get(url_path=avatar_path)
+        except avatars.DoesNotExist:
+            return JsonResponse({"message": "AVATAR_NOT_FOUND"}, status=404)
 
-        files_to_train =  urls = [ (x["id"], x["file_url"]) for x in filesDomain]
+        # Find the file IDs associated with the avatar
+        files = files_model.objects.filter(avatar_id=avatar.id, file_type__in=["DIET_TRAINING", "TRAINING"])
+        file_ids = [file.id for file in files]
+
+        if not files:
+            return JsonResponse({"message": "NOT_FOUND"}, status=404)
+
+        files_to_train = [(file.id, file.file_url) for file in files]
 
         for file_to_train in files_to_train:
             db_embeddings_utils.train_db(file_to_train[1], file_to_train[0])
 
-        # print(list(to_train))
-        return JsonResponse({ "message": "SUCCESS" })
+        return JsonResponse({"message": "SUCCESS"})
     except Exception as e:
         print(e)
-        return JsonResponse({ "message": "ERROR" }, status = 500)
+        return JsonResponse({"message": "ERROR"}, status=500)
 
 
 @csrf_exempt
