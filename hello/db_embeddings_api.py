@@ -62,16 +62,25 @@ def train(request):
 def get_prompt(request):
     """ Get pdf urls """
     print("mmmm")
-    headers_files_ids = request.headers.get('X-FILES-IDS') or ""
-    file_ids = [int(file_id) for file_id in headers_files_ids.split(",")]
+    avatar_path = request.headers.get('X-AVATAR-PATH') or ""
+
+    # Find the avatar using the avatar_path
+    try:
+        avatar = avatars.objects.get(url_path=avatar_path)
+    except avatars.DoesNotExist:
+        return JsonResponse({"message": "AVATAR_NOT_FOUND"}, status=404)
+
+    # Find the file IDs associated with the avatar
+    files = files_model.objects.filter(avatar_id=avatar.id)
+    file_ids = [file.id for file in files]
 
     question_asked = json.loads(request.body)["question"]
     try:
         print(file_ids)
         response = db_embeddings_utils.build_prompt(question_asked, file_ids)
         print(response)
-        return JsonResponse({ "message": "SUCCESS", "data": { "prompt": response }}, status = 200)
+        return JsonResponse({"message": "SUCCESS", "data": {"prompt": response}}, status=200)
     except Exception as e:
         print(e)
-        return JsonResponse({ "message": "ERROR"}, status = 500)
+        return JsonResponse({"message": "ERROR"}, status=500)
 
