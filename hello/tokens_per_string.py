@@ -8,7 +8,7 @@ def num_tokens_from_string(string: str, encoding_name: str = "cl100k_base") -> i
     return num_tokens
 
 def split_chunks(string: str, encoding_name: str = "cl100k_base", chunk_size = 200) -> int:
-    """Returns the number of tokens in a text string."""
+    """Returns the number of tokens in a text string. Da"""
     encoding = tiktoken.get_encoding(encoding_name)
     total_tokens = encoding.encode(string)
     num_tokens = len(total_tokens)
