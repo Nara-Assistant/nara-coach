@@ -27,7 +27,7 @@ SEPARATOR = "\n* "
 
 def build_prompt(query, files_ids):
     response = openai_requests.get_embedding(query)
-    documents_response = dbembeddings.match_documents(response, threshold=0.5, count=30, files_ids=files_ids)
+    documents_response = dbembeddings.match_documents(response, threshold=0.5, count=10, files_ids=files_ids)
     print(documents_response)
     chunks = []
     total_tokens = 0
