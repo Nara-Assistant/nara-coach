@@ -28,8 +28,13 @@ from urllib.parse import urlparse
 from django.core import serializers
 # import jwt
 import hello.db_embeddings_utils as db_embeddings_utils
+import threading
 
 load_dotenv('.env')
+
+def train_files(files_to_train):
+    for file_to_train in files_to_train:
+        db_embeddings_utils.train_db(file_to_train[1], file_to_train[0])
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -53,8 +58,7 @@ def train(request):
 
         files_to_train = [(file.id, file.file_url) for file in files]
 
-        for file_to_train in files_to_train:
-            db_embeddings_utils.train_db(file_to_train[1], file_to_train[0])
+        threading.Thread(target=train_files, args=[files_to_train]).start()
 
         return JsonResponse({"message": "SUCCESS"})
     except Exception as e:
