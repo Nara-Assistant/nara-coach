@@ -25,6 +25,7 @@ def insert_embeddings(vector, content, file_id, vector_key, tokens):
                 try:
                     curs.execute(f"select dblink_disconnect('nara_embeddings')")
                 except Exception as e:
+                    conn.close()
                     print(e)
                 
                 
@@ -33,6 +34,7 @@ def insert_embeddings(vector, content, file_id, vector_key, tokens):
                 for rResult in results:
                     print(rResult)
             except Exception as e:
+                conn.close()
                 print(content)
                 print(e)
 
@@ -56,6 +58,7 @@ def match_documents(vector, threshold, count, files_ids):
                 try:
                     curs.execute(f"select dblink_disconnect('nara_embeddings')")
                 except Exception as e:
+                    conn.close()
                     print(e)
 
                 for rResult in results:
@@ -64,6 +67,7 @@ def match_documents(vector, threshold, count, files_ids):
                         rResult
                     ]
             except Exception as e:
+                conn.close()
                 print(e)
 
     return response
