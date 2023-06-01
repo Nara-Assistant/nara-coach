@@ -5,6 +5,7 @@ import os
 load_dotenv('.env')
 
 conn = psycopg2.connect(os.environ.get("DATABASE_URL"))
+emb_conn = psycopg2.connect(os.environ.get("EMBEDDINGS_DATABASE_URL"))
 
 
 

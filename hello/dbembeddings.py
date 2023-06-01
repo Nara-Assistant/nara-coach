@@ -1,8 +1,15 @@
-from .dbconnect import conn
+from .dbconnect import conn, emb_conn
 import json
 import unicodedata
 
 def insert_embeddings(vector, content, file_id, vector_key, tokens): 
+    with emb_conn:
+        with emb_conn.cursor() as emb_curs:
+            try: 
+                emb_curs.execute(f"delete from hello_file_embeddings where file_id={file_id}")
+            except Exception as e:
+                print(e)
+
     with conn:
         with conn.cursor() as curs:
             try:
