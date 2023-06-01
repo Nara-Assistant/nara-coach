@@ -6,6 +6,7 @@ import hello.files as file_module
 import time
 import os
 from urllib.parse import urlparse
+from .dbconnect import emb_conn
 
 def train_db(url, file_id):
     ts = time.time()
@@ -15,6 +16,13 @@ def train_db(url, file_id):
     pdf_text = extract_pdf_text.get_text(f"{filename}-{os.path.basename(a.path)}")
 
     # print(pdf_text)
+    with emb_conn:
+        with emb_conn.cursor() as emb_curs:
+            try: 
+                emb_curs.execute(f"delete from hello_file_embeddings where file_id={file_id}")
+            except Exception as e:
+                print(e)
+
 
     chunks = tokens_per_string.split_chunks(pdf_text, chunk_size = 200)
     for key, chunk in enumerate(chunks):
