@@ -25,10 +25,16 @@ def train_db(url, file_id):
 
 
     chunks = tokens_per_string.split_chunks(pdf_text, chunk_size = 200)
-    for key, chunk in enumerate(chunks):
-        response = openai_requests.get_embedding(chunk[0])
-        dbembeddings.insert_embeddings(response, chunk[0], file_id, key + 1, chunk[1])
-        time.sleep(1)
+    chunk_array = [(key, chunk) for key, chunk in enumerate(chunks)]
+    for key, chunk in chunk_array:
+        try:    
+            response = openai_requests.get_embedding(chunk[0])
+            dbembeddings.insert_embeddings(response, chunk[0], file_id, key + 1, chunk[1])
+        except Exception as e:
+            chunk_array = [
+                *chunk_array,
+                (key, chunk)
+            ]
         # print((key + 1, len(response)))
 
 MAX_TOKENS = 6000
