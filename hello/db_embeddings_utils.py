@@ -20,6 +20,7 @@ def train_db(url, file_id):
     for key, chunk in enumerate(chunks):
         response = openai_requests.get_embedding(chunk[0])
         dbembeddings.insert_embeddings(response, chunk[0], file_id, key + 1, chunk[1])
+        time.sleep(1)
         # print((key + 1, len(response)))
 
 MAX_TOKENS = 6000
