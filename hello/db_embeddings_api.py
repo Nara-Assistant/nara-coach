@@ -37,13 +37,11 @@ def train_files(files_to_train, avatar_id):
     for file_to_train in files_to_train:
         db_embeddings_utils.train_db(file_to_train[1], file_to_train[0])
 
-    try:
-        current_queue = TrainingQueue.objects.get(avatar_id= avatar_id, status = "IN_PROGRESS")
+    current_queue = TrainingQueue.objects.filter(avatar_id= avatar_id, status = "IN_PROGRESS").first()
+
+    if current_queue is not None:
         current_queue.status = "DONE"
         current_queue.save()
-    except TrainingQueue.DoesNotExist:
-        # raise "NOT_FOUND"
-        pass
     
 
 @csrf_exempt
@@ -51,22 +49,21 @@ def train_files(files_to_train, avatar_id):
 def execute_from_queue(request):
     """ Get pdf urls """
     try:
-        try:
-            in_progress_queue = TrainingQueue.objects.get(status = "IN_PROGRESS")
+
+        in_progress_queue = TrainingQueue.objects.filter(status = "IN_PROGRESS").first()
+
+        if in_progress_queue is not None:
             return JsonResponse({"message": "SUCCESS"})
-        except TrainingQueue.DoesNotExist:
-           print("COntinue")
 
         avatar_id = request.headers.get('X-AVATAR-ID') or ""
         
-        try:
-            current_queue = TrainingQueue.objects.get(avatar_id= avatar_id, status = "PENDING")
-            current_queue.status = "IN_PROGRESS"
-            current_queue.save()
-        except TrainingQueue.DoesNotExist:
-           return JsonResponse({"message": "ERROR"}, status=404)
-            
-        
+        current_queue = TrainingQueue.objects.filter(avatar_id= avatar_id, status = "PENDING").first()
+
+        if current_queue is None:
+            return JsonResponse({"message": "ERROR"}, status=404)
+
+        current_queue.status = "IN_PROGRESS"
+        current_queue.save()
 
         # Find the file IDs associated with the avatar
         files = files_model.objects.filter(avatar_id=avatar_id, file_type__in=["DIET_TRAINING", "TRAINING"])
@@ -99,10 +96,10 @@ def train(request):
         except avatars.DoesNotExist:
             return JsonResponse({"message": "AVATAR_NOT_FOUND"}, status=404)
         
-        try:
-            current_queue = TrainingQueue.objects.get(avatar_id= avatar.id, status = "PENDING")
-            
-        except TrainingQueue.DoesNotExist:
+        current_queue = TrainingQueue.objects.filter(avatar_id= avatar.id, status = "PENDING").first()
+
+                
+        if current_queue is None:
             (TrainingQueue(avatar_id= avatar.id, status = "PENDING")).save()
             
         
