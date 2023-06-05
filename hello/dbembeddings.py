@@ -3,8 +3,9 @@ import json
 import unicodedata
 
 def insert_embeddings(vector, content, file_id, vector_key, tokens): 
-    with conn:
-        with conn.cursor() as curs:
+    print("Is here 1")
+    with emb_conn:
+        with emb_conn.cursor() as curs:
             try:
                 # try:
                 #     curs.execute(f"select dblink_disconnect('nara_embeddings')")
@@ -17,16 +18,17 @@ def insert_embeddings(vector, content, file_id, vector_key, tokens):
                 # cleaned_content_en = cleaned_content.encode("ascii", "ignore")
                 # cleaned_de = cleaned_content_en.decode('ascii')
                 print(cleaned_content)
-                query_e = f"select * from insert_embeddings(Array{vectorString}, E'{cleaned_content}', {file_id}, {vector_key}, {tokens})"
+                print("Is here 2")
+                query_e = f"select * from insert_embeddings(Array{vectorString}::vector, E'{cleaned_content}', {file_id}, {vector_key}, {tokens})"
                 print(query_e)
                 curs.execute(query_e)
                 results = curs.fetchall()
 
-                try:
-                    curs.execute(f"select dblink_disconnect('nara_embeddings')")
-                except Exception as e:
-                    # conn.close()
-                    print(e)
+                # try:
+                #     curs.execute(f"select dblink_disconnect('nara_embeddings')")
+                # except Exception as e:
+                #     # conn.close()
+                #     print(e)
                 
                 
 
@@ -38,11 +40,12 @@ def insert_embeddings(vector, content, file_id, vector_key, tokens):
                 print(content)
                 print(e)
 
+    print("SUCCESS")
 
 def match_documents(vector, threshold, count, files_ids): 
     response = []
-    with conn:
-        with conn.cursor() as curs:
+    with emb_conn:
+        with emb_conn.cursor() as curs:
             try:
                 # try:
                 #     curs.execute(f"select dblink_disconnect('nara_embeddings')")
@@ -51,15 +54,15 @@ def match_documents(vector, threshold, count, files_ids):
                     
                 vectorString = '[' + ', '.join([str(vectorItem) for vectorItem in vector]) + ']'
                 filesString = '[' + ', '.join([str(fileItem) for fileItem in files_ids]) + ']'
-                curs.execute(f"select * from match_documents(Array{vectorString}, {threshold}, {count}, Array{filesString})")
+                curs.execute(f"select * from match_documents(Array{vectorString}::vector, {threshold}, {count}, Array{filesString})")
                 
                 results = curs.fetchall()
 
-                try:
-                    curs.execute(f"select dblink_disconnect('nara_embeddings')")
-                except Exception as e:
-                    # conn.close()
-                    print(e)
+                # try:
+                #     curs.execute(f"select dblink_disconnect('nara_embeddings')")
+                # except Exception as e:
+                #     # conn.close()
+                #     print(e)
 
                 for rResult in results:
                     response = [

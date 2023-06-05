@@ -31,6 +31,8 @@ urlpatterns = [
     path("api/health-check", hello.api.health_check, name="health_check"),
     path("api/v3/prompt/build", hello.db_embeddings_api.get_prompt, name="build_prompt_v3"),
     path("api/v3/train", hello.db_embeddings_api.train, name="train_v3"),
+    path("api/v3/queue/execute", hello.db_embeddings_api.execute_from_queue, name="execute_from_queue"),
+    
     
     # path("api/test", hello.api.test, name="test")
 ]

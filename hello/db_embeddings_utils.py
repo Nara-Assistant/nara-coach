@@ -23,12 +23,15 @@ def train_db(url, file_id):
             except Exception as e:
                 print(e)
 
-
+    print("Is here")
     chunks = tokens_per_string.split_chunks(pdf_text, chunk_size = 200)
+    print(chunks)
     chunk_array = [(key, chunk) for key, chunk in enumerate(chunks)]
     for key, chunk in chunk_array:
-        try:    
+        try:  
+            print("Hey first iteration")  
             response = openai_requests.get_embedding(chunk[0])
+            print("Hey first iteration:after")  
             dbembeddings.insert_embeddings(response, chunk[0], file_id, key + 1, chunk[1])
         except Exception as e:
             chunk_array = [

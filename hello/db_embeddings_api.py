@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django import forms
 from dotenv import load_dotenv
 
-from .models import Question, avatars, diets, files as files_model, Users, Sessions, PresetQuestions, user_avatars, Prompts
+from .models import Question, avatars, diets, files as files_model, Users, Sessions, PresetQuestions, user_avatars, Prompts, TrainingQueue
 from .decorators import supabase_auth_decorator
 from .performance import perf_checker
 from .notifications import send_notification
@@ -30,11 +30,61 @@ from django.core import serializers
 import hello.db_embeddings_utils as db_embeddings_utils
 import threading
 
+
 load_dotenv('.env')
 
-def train_files(files_to_train):
+def train_files(files_to_train, avatar_id):
     for file_to_train in files_to_train:
         db_embeddings_utils.train_db(file_to_train[1], file_to_train[0])
+
+    try:
+        current_queue = TrainingQueue.objects.get(avatar_id= avatar_id, status = "IN_PROGRESS")
+        current_queue.status = "DONE"
+        current_queue.save()
+    except TrainingQueue.DoesNotExist:
+        # raise "NOT_FOUND"
+        pass
+    
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def execute_from_queue(request):
+    """ Get pdf urls """
+    try:
+        try:
+            in_progress_queue = TrainingQueue.objects.get(status = "IN_PROGRESS")
+            return JsonResponse({"message": "SUCCESS"})
+        except TrainingQueue.DoesNotExist:
+           print("COntinue")
+
+        avatar_id = request.headers.get('X-AVATAR-ID') or ""
+        
+        try:
+            current_queue = TrainingQueue.objects.get(avatar_id= avatar_id, status = "PENDING")
+            current_queue.status = "IN_PROGRESS"
+            current_queue.save()
+        except TrainingQueue.DoesNotExist:
+           return JsonResponse({"message": "ERROR"}, status=404)
+            
+        
+
+        # Find the file IDs associated with the avatar
+        files = files_model.objects.filter(avatar_id=avatar_id, file_type__in=["DIET_TRAINING", "TRAINING"])
+        file_ids = [file.id for file in files]
+
+        if not files:
+            return JsonResponse({"message": "NOT_FOUND"}, status=404)
+
+        files_to_train = [(file.id, file.file_url) for file in files]
+
+        threading.Thread(target=train_files, args=[files_to_train, avatar_id]).start()
+
+        return JsonResponse({"message": "SUCCESS"})
+    except Exception as e:
+        print(e)
+        return JsonResponse({"message": "ERROR"}, status=500)
+
+
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -48,17 +98,25 @@ def train(request):
             avatar = avatars.objects.get(url_path=avatar_path)
         except avatars.DoesNotExist:
             return JsonResponse({"message": "AVATAR_NOT_FOUND"}, status=404)
+        
+        try:
+            current_queue = TrainingQueue.objects.get(avatar_id= avatar.id, status = "PENDING")
+            
+        except TrainingQueue.DoesNotExist:
+            (TrainingQueue(avatar_id= avatar.id, status = "PENDING")).save()
+            
+        
 
-        # Find the file IDs associated with the avatar
-        files = files_model.objects.filter(avatar_id=avatar.id, file_type__in=["DIET_TRAINING", "TRAINING"])
-        file_ids = [file.id for file in files]
+        # # Find the file IDs associated with the avatar
+        # files = files_model.objects.filter(avatar_id=avatar.id, file_type__in=["DIET_TRAINING", "TRAINING"])
+        # file_ids = [file.id for file in files]
 
-        if not files:
-            return JsonResponse({"message": "NOT_FOUND"}, status=404)
+        # if not files:
+        #     return JsonResponse({"message": "NOT_FOUND"}, status=404)
 
-        files_to_train = [(file.id, file.file_url) for file in files]
+        # files_to_train = [(file.id, file.file_url) for file in files]
 
-        threading.Thread(target=train_files, args=[files_to_train]).start()
+        # threading.Thread(target=train_files, args=[files_to_train]).start()
 
         return JsonResponse({"message": "SUCCESS"})
     except Exception as e:
