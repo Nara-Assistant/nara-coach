@@ -39,6 +39,7 @@ class files(models.Model):
     avatar_id = models.IntegerField(null=True)
     file_url = models.CharField(default="", max_length=255, null=True, blank=True)
     file_type = models.CharField(default="TRAINING", max_length=255, null=True, blank=True)
+    metadata = models.TextField(null=True, blank=True)
 
 class PresetQuestions(models.Model):
     created_at = models.DateTimeField("date created", auto_now_add=True, null=True)

@@ -7,6 +7,8 @@ import time
 import os
 from urllib.parse import urlparse
 from .dbconnect import emb_conn
+from .models import files as files_model
+import json
 
 def train_db(url, file_id):
     ts = time.time()
@@ -51,20 +53,40 @@ def build_prompt(query, files_ids):
     total_tokens = 0
     separator_tokens = tokens_per_string.num_tokens_from_string(SEPARATOR)
 
+    chunks_by_file_id = {}
+
     for (_file_id, chunk_content, _similarity, tokens) in documents_response:
+        if chunks_by_file_id.get(_file_id) is None:
+            file_domain = files_model.objects.filter(id=_file_id).first()
+            file_metadata = "" if file_domain is None else file_domain.metadata
+            chunks_by_file_id[_file_id] = {
+                "chunks": [],
+                "metadata": file_metadata
+            }
         total_tokens += (tokens + separator_tokens)
 
         if total_tokens > MAX_TOKENS:
-            chunks = [
-                *chunks,
+            chunks_by_file_id[_file_id]["chunks"] = [
+                *chunks_by_file_id[_file_id]["chunks"],
                 chunk_content[:((MAX_TOKENS - (total_tokens - (tokens + separator_tokens))))]
             ]
             break
         else:
-            chunks = [
-                *chunks,
+            chunks_by_file_id[_file_id]["chunks"] = [
+                *chunks_by_file_id[_file_id]["chunks"],
                 chunk_content + SEPARATOR
             ]
 
-    return ''.join(chunks)
+    response = []
+
+    for key in chunks_by_file_id:
+        response = [
+            *response,
+            {
+                "content": ''.join(chunks_by_file_id[key]["chunks"]),
+                "metadata": chunks_by_file_id[key]["metadata"]
+            }
+        ]
+    # return ''.join(chunks)
+    return json.dumps(response)
 
