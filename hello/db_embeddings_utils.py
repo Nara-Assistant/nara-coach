@@ -42,12 +42,12 @@ def train_db(url, file_id):
             ]
         # print((key + 1, len(response)))
 
-MAX_TOKENS = 6000
+MAX_TOKENS = 1000
 SEPARATOR = "\n* "
 
 def build_prompt(query, files_ids):
     response = openai_requests.get_embedding(query)
-    documents_response = dbembeddings.match_documents(response, threshold=0.5, count=30, files_ids=files_ids)
+    documents_response = dbembeddings.match_documents(response, threshold=0.5, count=5, files_ids=files_ids)
     print(documents_response)
     chunks = []
     total_tokens = 0
