@@ -13,6 +13,7 @@ from .notifications import send_notification
 
 def train_db(url, file_id):
     try: 
+        url = url.strip()
         ts = time.time()
         a = urlparse(url)
         filename = f"{file_id}-{ts}"
