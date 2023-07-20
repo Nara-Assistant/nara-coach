@@ -64,10 +64,13 @@ def execute_from_queue(request):
 
         current_queue.status = "IN_PROGRESS"
         current_queue.save()
-
-        # Find the file IDs associated with the avatar
-        files = files_model.objects.filter(avatar_id=avatar_id, file_type__in=["DIET_TRAINING", "TRAINING"])
-        file_ids = [file.id for file in files]
+        files = None
+        if current_queue.files_ids is not None:
+            file_ids = json.loads(current_queue.files_ids)
+            files = files_model.objects.filter(avatar_id=avatar_id, file_type__in=["DIET_TRAINING", "TRAINING"], id__in=file_ids)
+        else:
+            # Find the file IDs associated with the avatar
+            files = files_model.objects.filter(avatar_id=avatar_id, file_type__in=["DIET_TRAINING", "TRAINING"])
 
         if not files:
             return JsonResponse({"message": "NOT_FOUND"}, status=404)
@@ -89,6 +92,8 @@ def train(request):
     """ Get pdf urls """
     try:
         avatar_path = request.headers.get('X-AVATAR-PATH') or ""
+        files_ids = request.headers.get('X-FILES-IDS') or None
+        files_ids = json.loads(files_ids) if files_ids is not None else None
 
         # Find the avatar using the avatar_path
         try:
@@ -100,21 +105,7 @@ def train(request):
 
                 
         if current_queue is None:
-            (TrainingQueue(avatar_id= avatar.id, status = "PENDING")).save()
-            
-        
-
-        # # Find the file IDs associated with the avatar
-        # files = files_model.objects.filter(avatar_id=avatar.id, file_type__in=["DIET_TRAINING", "TRAINING"])
-        # file_ids = [file.id for file in files]
-
-        # if not files:
-        #     return JsonResponse({"message": "NOT_FOUND"}, status=404)
-
-        # files_to_train = [(file.id, file.file_url) for file in files]
-
-        # threading.Thread(target=train_files, args=[files_to_train]).start()
-
+            (TrainingQueue(avatar_id= avatar.id, status = "PENDING", files_ids=json.dumps(files_ids))).save()
         return JsonResponse({"message": "SUCCESS"})
     except Exception as e:
         print(e)

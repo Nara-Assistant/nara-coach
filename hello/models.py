@@ -71,6 +71,7 @@ class Sessions(models.Model):
 class TrainingQueue(models.Model):
     avatar_id = models.IntegerField(null=True)
     status = models.TextField(null=True, blank=True)
+    files_ids = models.TextField(null=True, blank=True)
 
     class Meta:
         db_table = 'hello_training_queue'

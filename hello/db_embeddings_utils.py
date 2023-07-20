@@ -45,7 +45,7 @@ def train_db(url, file_id):
                 ]
             # print((key + 1, len(response)))
     except Exception as e:
-        send_notification("train_db", "nara-heroku", [("url", url), ("file_id", file_id)])
+        send_notification("train_db", "nara-heroku", [("url", url), ("file_id", file_id), "e": str(e)])
 
 
 MAX_TOKENS = 1000
