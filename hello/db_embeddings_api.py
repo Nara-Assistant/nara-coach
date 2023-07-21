@@ -116,7 +116,7 @@ def train(request):
 
                 
         if current_queue is None:
-            (TrainingQueue(avatar_id= avatar.id, status = "PENDING", files_ids=json.dumps(files_ids))).save()
+            (TrainingQueue(avatar_id= avatar.id, status = "PENDING", files_ids=None if files_ids is None else json.dumps(files_ids))).save()
         return JsonResponse({"message": "SUCCESS"})
     except Exception as e:
         print(e)
