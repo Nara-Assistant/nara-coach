@@ -115,7 +115,7 @@ def train(request):
         current_queue = TrainingQueue.objects.filter(avatar_id= avatar.id, status = "PENDING").first()
 
                 
-        if current_queue is None:
+        if current_queue is None or files_ids is not None:
             (TrainingQueue(avatar_id= avatar.id, status = "PENDING", files_ids=None if files_ids is None else json.dumps(files_ids))).save()
         return JsonResponse({"message": "SUCCESS"})
     except Exception as e:
