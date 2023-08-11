@@ -33,15 +33,15 @@ import requests
 
 load_dotenv('.env')
 
-def update_welcome_message(avatar_id):
-    url = 'https://nara-agi-oq9f.zeet-nara.zeet.app/update_welcome_message'
-    headers = {'Content-Type': 'application/json'}
-    data = {"avatar_id": avatar_id}
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
-        print("Welcome message updated successfully.")
-    else:
-        print("Failed to update welcome message.")
+# def update_welcome_message(avatar_id):
+#     url = 'https://nara-agi-oq9f.zeet-nara.zeet.app/update_welcome_message'
+#     headers = {'Content-Type': 'application/json'}
+#     data = {"avatar_id": avatar_id}
+#     response = requests.post(url, headers=headers, json=data)
+#     if response.status_code == 200:
+#         print("Welcome message updated successfully.")
+#     else:
+#         print("Failed to update welcome message.")
 
 def train_files(files_to_train, avatar_id):
     for file_to_train in files_to_train:
@@ -51,7 +51,7 @@ def train_files(files_to_train, avatar_id):
 
     if current_queue is not None:
         current_queue.status = "DONE"
-        update_welcome_message(avatar_id)
+        # update_welcome_message(avatar_id)
         current_queue.save()
     
 
