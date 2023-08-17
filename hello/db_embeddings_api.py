@@ -43,11 +43,11 @@ load_dotenv('.env')
 #     else:
 #         print("Failed to update welcome message.")
 
-def train_files(files_to_train, avatar_id):
+def train_files(files_to_train, avatar_id, queue_id):
     for file_to_train in files_to_train:
         db_embeddings_utils.train_db(file_to_train[1], file_to_train[0])
 
-    current_queue = TrainingQueue.objects.filter(avatar_id= avatar_id, status = "IN_PROGRESS").first()
+    current_queue = TrainingQueue.objects.filter(avatar_id= avatar_id, status = "IN_PROGRESS", id=queue_id).first()
 
     if current_queue is not None:
         current_queue.status = "DONE"
@@ -61,14 +61,15 @@ def execute_from_queue(request):
     """ Get pdf urls """
     try:
 
-        in_progress_queue = TrainingQueue.objects.filter(status = "IN_PROGRESS").first()
+        in_progress_queue_count = TrainingQueue.objects.filter(status = "IN_PROGRESS").count()
 
-        if in_progress_queue is not None:
+        if in_progress_queue_count >= 5:
             return JsonResponse({"message": "SUCCESS"})
 
         avatar_id = request.headers.get('X-AVATAR-ID') or ""
+        queue_id = request.headers.get('X-QUEUE-ID') or ""
         
-        current_queue = TrainingQueue.objects.filter(avatar_id= avatar_id, status = "PENDING").first()
+        current_queue = TrainingQueue.objects.filter(avatar_id= avatar_id, status = "PENDING", id=queue_id).first()
 
         if current_queue is None:
             return JsonResponse({"message": "ERROR"}, status=404)
@@ -88,7 +89,7 @@ def execute_from_queue(request):
 
         files_to_train = [(file.id, file.file_url) for file in files]
 
-        threading.Thread(target=train_files, args=[files_to_train, avatar_id]).start()
+        threading.Thread(target=train_files, args=[files_to_train, avatar_id, queue_id]).start()
 
         return JsonResponse({"message": "SUCCESS"})
     except Exception as e:
