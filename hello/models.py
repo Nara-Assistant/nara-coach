@@ -69,7 +69,7 @@ class Sessions(models.Model):
 
 
 class TrainingQueue(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.BigAutoField(primary_key=True)
     avatar_id = models.IntegerField(null=True)
     status = models.TextField(null=True, blank=True)
     files_ids = models.TextField(null=True, blank=True)
