@@ -119,8 +119,10 @@ def train(request):
         if current_queue is None or files_ids is not None:
             (TrainingQueue(avatar_id= avatar.id, status = "PENDING", files_ids=None if files_ids is None else json.dumps(files_ids))).save()
         return JsonResponse({"message": "SUCCESS"})
+
     except Exception as e:
         print(e)
+        send_notification("train_request", "nara-heroku", [("e", str(e))])
         return JsonResponse({"message": "ERROR"}, status=500)
 
 
