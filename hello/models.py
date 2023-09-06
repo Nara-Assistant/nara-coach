@@ -40,6 +40,7 @@ class files(models.Model):
     file_url = models.CharField(default="", max_length=255, null=True, blank=True)
     file_type = models.CharField(default="TRAINING", max_length=255, null=True, blank=True)
     metadata = models.TextField(null=True, blank=True)
+    raw_data = models.TextField(null=True)
 
 class PresetQuestions(models.Model):
     created_at = models.DateTimeField("date created", auto_now_add=True, null=True)

@@ -45,7 +45,7 @@ load_dotenv('.env')
 
 def train_files(files_to_train, avatar_id, queue_id):
     for file_to_train in files_to_train:
-        db_embeddings_utils.train_db(file_to_train[1], file_to_train[0])
+        db_embeddings_utils.train_db(file_to_train[1], file_to_train[0], file_to_train[2])
 
     current_queue = TrainingQueue.objects.filter(avatar_id= avatar_id, status = "IN_PROGRESS", id=queue_id).first()
 
@@ -87,7 +87,7 @@ def execute_from_queue(request):
         if not files:
             return JsonResponse({"message": "NOT_FOUND"}, status=404)
 
-        files_to_train = [(file.id, file.file_url) for file in files]
+        files_to_train = [(file.id, file.file_url, file.raw_data) for file in files]
 
         threading.Thread(target=train_files, args=[files_to_train, avatar_id, queue_id]).start()
 

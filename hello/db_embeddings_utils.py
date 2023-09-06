@@ -11,14 +11,19 @@ from .models import files as files_model
 import json
 from .notifications import send_notification
 
-def train_db(url, file_id):
+def train_db(url, file_id, raw_data = None):
     try: 
         url = url.strip()
         ts = time.time()
         a = urlparse(url)
         filename = f"{file_id}-{ts}"
-        file_module.download_file(url, f"{filename}-{os.path.basename(a.path)}")
-        pdf_text = extract_pdf_text.get_text(f"{filename}-{os.path.basename(a.path)}")
+        pdf_text = None
+
+        if raw_data is not None:
+            pdf_text = raw_data
+        else:
+            file_module.download_file(url, f"{filename}-{os.path.basename(a.path)}")
+            pdf_text = extract_pdf_text.get_text(f"{filename}-{os.path.basename(a.path)}")
 
         # print(pdf_text)
         with emb_conn:
