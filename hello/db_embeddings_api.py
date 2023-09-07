@@ -105,6 +105,7 @@ def train(request):
     try:
         avatar_path = request.headers.get('X-AVATAR-PATH') or ""
         files_ids = request.headers.get('X-FILES-IDS') or None
+        chunk_id = request.headers.get('X-CHUNK-ID') or None
         files_ids = json.loads(files_ids) if files_ids is not None else None
 
         # Find the avatar using the avatar_path
@@ -117,7 +118,7 @@ def train(request):
 
                 
         if current_queue is None or files_ids is not None:
-            (TrainingQueue(avatar_id= avatar.id, status = "PENDING", files_ids=None if files_ids is None else json.dumps(files_ids))).save()
+            (TrainingQueue(chunk_id = chunk_id, avatar_id= avatar.id, status = "PENDING", files_ids=None if files_ids is None else json.dumps(files_ids))).save()
         return JsonResponse({"message": "SUCCESS"})
 
     except Exception as e:
