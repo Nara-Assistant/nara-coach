@@ -13,9 +13,11 @@ from .notifications import send_notification
 
 def train_db(url, file_id, raw_data = None):
     try: 
-        url = url.strip()
+        if url is not None:
+            url = url.strip()
+            a = urlparse(url)
+
         ts = time.time()
-        a = urlparse(url)
         filename = f"{file_id}-{ts}"
         pdf_text = None
 
