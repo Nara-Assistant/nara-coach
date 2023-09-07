@@ -100,6 +100,7 @@ def build_prompt(query, files_ids):
                 "metadata": chunks_by_file_id[key]["metadata"]
             }
         ]
-
+    ### JUST for test
+    
     return json.dumps(response)
 
