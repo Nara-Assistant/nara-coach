@@ -36,12 +36,14 @@ def train_db(url, file_id, raw_data = None):
                     except Exception as e:
                         print(e)
         except Exception as e:
-            send_notification("train_db", "nara-heroku", [("description", "Error deleting old file, but the training is still working"), ("url", url), ("file_id", file_id), ("e", str(e))])
+            print(e)
+            # send_notification("train_db", "nara-heroku", [("description", "Error deleting old file, but the training is still working"), ("url", url), ("file_id", file_id), ("e", str(e))])
 
         print("Is here")
         chunks = tokens_per_string.split_chunks(pdf_text, chunk_size = 200)
         print(chunks)
         chunk_array = [(key, chunk) for key, chunk in enumerate(chunks)]
+        failed_chunks = []
         for key, chunk in chunk_array:
             try:  
                 print("Hey first iteration")  
@@ -53,6 +55,14 @@ def train_db(url, file_id, raw_data = None):
                     *chunk_array,
                     (key, chunk)
                 ]
+                failed_chunks = [
+                    *failed_chunks,
+                    key
+                ]
+
+        if failed_chunks:
+            send_notification("train_db", "nara-heroku", [("completion", f"done: {len(chunk_array) - len(failed_chunks)} - total: {len(chunk_array)}"), ("chunks", failed_chunks), ("file_id", file_id), ("description", "Error training chunks")])
+
             # print((key + 1, len(response)))
     except Exception as e:
         send_notification("train_db", "nara-heroku", [("url", url), ("file_id", file_id), ("e", str(e))])
