@@ -6,7 +6,7 @@ import hello.files as file_module
 import time
 import os
 from urllib.parse import urlparse
-from .dbconnect import emb_conn
+from .dbconnect import emb_curs
 from .models import files as files_model
 import json
 from .notifications import send_notification
@@ -29,15 +29,9 @@ def train_db(url, file_id, raw_data = None):
 
         # print(pdf_text)
         try: 
-            with emb_conn:
-                with emb_conn.cursor() as emb_curs:
-                    try: 
-                        emb_curs.execute(f"delete from hello_file_embeddings where file_id={file_id}")
-                    except Exception as e:
-                        print(e)
+            emb_curs.execute(f"delete from hello_file_embeddings where file_id={file_id}")
         except Exception as e:
             print(e)
-            # send_notification("train_db", "nara-heroku", [("description", "Error deleting old file, but the training is still working"), ("url", url), ("file_id", file_id), ("e", str(e))])
 
         print("Is here")
         chunks = tokens_per_string.split_chunks(pdf_text, chunk_size = 200)
@@ -57,7 +51,7 @@ def train_db(url, file_id, raw_data = None):
                 ]
                 failed_chunks = [
                     *failed_chunks,
-                    key
+                    (key, e)
                 ]
 
         if failed_chunks:
