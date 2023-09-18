@@ -36,7 +36,7 @@ def train_db(url, file_id, raw_data = None):
                     except Exception as e:
                         print(e)
         except Exception as e:
-            send_notification("train_db", "nara-heroku", [("description", "Error deleting old file, but the training is still working")("url", url), ("file_id", file_id), ("e", str(e))])
+            send_notification("train_db", "nara-heroku", [("description", "Error deleting old file, but the training is still working"), ("url", url), ("file_id", file_id), ("e", str(e))])
 
         print("Is here")
         chunks = tokens_per_string.split_chunks(pdf_text, chunk_size = 200)
