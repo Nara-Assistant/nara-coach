@@ -1,6 +1,8 @@
-from .dbconnect import emb_curs
+from .dbconnect import emb_conn
+import json
+import unicodedata
 
-def insert_embeddings(vector, content, file_id, vector_key, tokens): 
+def insert_embeddings(vector, content, file_id, vector_key, tokens, emb_curs): 
     print("Is here 1")
     try:
         # try:
@@ -32,23 +34,28 @@ def insert_embeddings(vector, content, file_id, vector_key, tokens):
 
 def match_documents(vector, threshold, count, files_ids): 
     response = []
-    try:
-            
-        vectorString = '[' + ', '.join([str(vectorItem) for vectorItem in vector]) + ']'
-        filesString = '[' + ', '.join([str(fileItem) for fileItem in files_ids]) + ']'
-        emb_curs.execute(f"select * from match_documents(Array{vectorString}::vector, {threshold}, {count}, Array{filesString})")
-        
-        results = emb_curs.fetchall()
+    with emb_conn:
+        with emb_conn.cursor() as curs:
+            try:
+                # try:
+                #     curs.execute(f"select dblink_disconnect('nara_embeddings')")
+                # except Exception as e:
+                #     print("Already disconnected")
+                    
+                vectorString = '[' + ', '.join([str(vectorItem) for vectorItem in vector]) + ']'
+                filesString = '[' + ', '.join([str(fileItem) for fileItem in files_ids]) + ']'
+                curs.execute(f"select * from match_documents(Array{vectorString}::vector, {threshold}, {count}, Array{filesString})")
+                
+                results = curs.fetchall()
 
 
-        for rResult in results:
-            response = [
-                *response,
-                rResult
-            ]
-    except Exception as e:
-        print(e)
-
+                for rResult in results:
+                    response = [
+                        *response,
+                        rResult
+                    ]
+            except Exception as e:
+                print(e)
 
     return response
 
