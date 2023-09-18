@@ -40,21 +40,29 @@ def train_db(url, file_id, raw_data = None):
                 print(chunks)
                 chunk_array = [(key, chunk) for key, chunk in enumerate(chunks)]
                 failed_chunks = []
-                for key, chunk in chunk_array:
+
+                current_position = 0
+                
+                while current_position < len(chunk_array):
+                    key, chunk = chunk_array[current_position]
+
                     try:  
                         print("Hey first iteration")  
                         response = openai_requests.get_embedding(chunk[0])
                         print("Hey first iteration:after")  
                         dbembeddings.insert_embeddings(response, chunk[0], file_id, key + 1, chunk[1], emb_curs)
+                        current_position = current_position + 1
                     except Exception as e:
-                        chunk_array = [
-                            *chunk_array,
-                            (key, chunk)
-                        ]
-                        failed_chunks = [
-                            *failed_chunks,
-                            (key, e)
-                        ]
+                        pass
+                        # chunk_array = [
+                        #     *chunk_array,
+                        #     (key, chunk)
+                        # ]
+                        # failed_chunks = [
+                        #     *failed_chunks,
+                        #     (key, e)
+                        # ]
+ 
 
                 if failed_chunks:
                     send_notification("train_db", "nara-heroku", [("completion", f"done: {len(chunk_array) - len(failed_chunks)} - total: {len(chunk_array)}"), ("chunks", failed_chunks), ("file_id", file_id), ("description", "Error training chunks")])
