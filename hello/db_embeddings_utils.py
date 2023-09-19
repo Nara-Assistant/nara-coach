@@ -52,15 +52,15 @@ def train_db(url, file_id, raw_data = None, emb_curs = None):
                 current_position = current_position + 1
             except Exception as e:
                 current_position = current_position + 1
-                pass
+                # pass
                 # chunk_array = [
                 #     *chunk_array,
                 #     (key, chunk)
                 # ]
-                # failed_chunks = [
-                #     *failed_chunks,
-                #     (key, e)
-                # ]
+                failed_chunks = [
+                    *failed_chunks,
+                    (key, e)
+                ]
 
 
         if failed_chunks:
