@@ -47,7 +47,7 @@ load_dotenv('.env')
 def train_files(files_to_train, avatar_id, queue_id):
 
     for file_to_train in files_to_train:
-        db_embeddings_utils.train_db(file_to_train[1], file_to_train[0], file_to_train[2])
+        db_embeddings_utils.train_db(file_to_train[1], file_to_train[0], file_to_train[2], avatar_id)
 
     current_queue = TrainingQueue.objects.filter(avatar_id= avatar_id, status = "IN_PROGRESS", id=queue_id).first()
     

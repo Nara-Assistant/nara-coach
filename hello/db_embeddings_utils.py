@@ -7,11 +7,18 @@ import time
 import os
 from urllib.parse import urlparse
 from .dbconnect import emb_conn
-from .models import files as files_model
+from .models import files as files_model, FileFailedChunk
 import json
 from .notifications import send_notification
 
-def train_db(url, file_id, raw_data = None):
+def set_failed_chunks(failed_chunks, file_id, avatar_id):
+    for failed_chunk in failed_chunks:
+        try:
+            (FileFailedChunk(avatar_id = avatar_id, content = failed_chunk[2], tokens = failed_chunk[3], file_id = file_id, key = failed_chunk[0])).save()
+        except Exception as e:
+            print(e)
+
+def train_db(url, file_id, raw_data = None, avatar_id = None):
     try: 
         if url is not None:
             url = url.strip()
@@ -60,11 +67,12 @@ def train_db(url, file_id, raw_data = None):
                 current_position = current_position + 1
                 failed_chunks = [
                     *failed_chunks,
-                    (key, e)
+                    (key, e, chunk[0], chunk[1])
                 ]
 
 
         if failed_chunks:
+            set_failed_chunks(failed_chunks, file_id, avatar_id)
             send_notification("train_db", "nara-heroku", [("completion", f"done: {len(chunk_array) - len(failed_chunks)} - total: {len(chunk_array)}"), ("chunks", failed_chunks), ("file_id", file_id), ("description", "Error training chunks")])
 
             # print((key + 1, len(response)))

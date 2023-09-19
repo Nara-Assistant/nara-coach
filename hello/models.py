@@ -1,5 +1,6 @@
 from datetime import datetime
 from django.db import models
+import uuid
 
 class Question(models.Model):
     question = models.CharField(max_length=140)
@@ -78,3 +79,14 @@ class TrainingQueue(models.Model):
 
     class Meta:
         db_table = 'hello_training_queue'
+
+class FileFailedChunk(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    avatar_id = models.IntegerField(null=True)
+    content = models.TextField(null=True, blank=True)
+    tokens = models.TextField(null=True, blank=True)
+    file_id = models.TextField(null=True, blank=True)
+    key = models.TextField(null=True)
+
+    class Meta:
+        db_table = 'hello_file_failed_chunks'

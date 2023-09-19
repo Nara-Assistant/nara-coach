@@ -31,6 +31,7 @@ def insert_embeddings(vector, content, file_id, vector_key, tokens):
     except Exception as e:
         print(content)
         print(e)
+        raise e
 
 
     print("SUCCESS")
