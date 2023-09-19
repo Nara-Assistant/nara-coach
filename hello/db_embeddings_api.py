@@ -44,14 +44,13 @@ load_dotenv('.env')
 #     else:
 #         print("Failed to update welcome message.")
 
-def train_files(files_to_train, avatar_id, queue_id):
-    with emb_conn:
-        with emb_conn.cursor() as emb_curs:
-            for file_to_train in files_to_train:
-                db_embeddings_utils.train_db(file_to_train[1], file_to_train[0], file_to_train[2], emb_curs)
+def train_files(files_to_train, avatar_id, queue_id, emb_curs):
+
+    for file_to_train in files_to_train:
+        db_embeddings_utils.train_db(file_to_train[1], file_to_train[0], file_to_train[2], emb_curs)
 
     current_queue = TrainingQueue.objects.filter(avatar_id= avatar_id, status = "IN_PROGRESS", id=queue_id).first()
-
+    emb_curs.close()
     if current_queue is not None:
         current_queue.status = "DONE"
         # update_welcome_message(avatar_id)
@@ -92,7 +91,8 @@ def execute_from_queue(request):
 
         files_to_train = [(file.id, file.file_url, file.raw_data) for file in files]
 
-        threading.Thread(target=train_files, args=[files_to_train, avatar_id, queue_id]).start()
+        emb_curs = emb_conn.cursor()
+        threading.Thread(target=train_files, args=[files_to_train, avatar_id, queue_id, emb_curs]).start()
 
         return JsonResponse({"message": "SUCCESS"})
     except Exception as e:
