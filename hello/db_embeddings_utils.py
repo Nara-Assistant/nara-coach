@@ -51,7 +51,7 @@ def train_db(url, file_id, raw_data = None):
 
             try:  
                 print("Hey first iteration")  
-                time.sleep(20)
+                time.sleep(.05)
                 response = openai_requests.get_embedding(chunk[0])
                 print("Hey first iteration:after")  
                 dbembeddings.insert_embeddings(response, chunk[0], file_id, key + 1, chunk[1])
