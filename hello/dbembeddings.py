@@ -2,7 +2,7 @@ from .dbconnect import emb_conn
 import json
 import unicodedata
 
-def insert_embeddings(vector, content, file_id, vector_key, tokens, emb_curs): 
+def insert_embeddings(vector, content, file_id, vector_key, tokens): 
     print("Is here 1")
     try:
         # try:
@@ -19,12 +19,15 @@ def insert_embeddings(vector, content, file_id, vector_key, tokens, emb_curs):
         print("Is here 2")
         query_e = f"select * from insert_embeddings(Array{vectorString}::vector, E'{cleaned_content}', {file_id}, {vector_key}, {tokens})"
         print(query_e)
-        emb_curs.execute(query_e)
-        results = emb_curs.fetchall()
+
+        with emb_conn:
+            with emb_conn.cursor() as emb_curs:
+                emb_curs.execute(query_e)
+                # results = emb_curs.fetchall()
 
 
-        for rResult in results:
-            print(rResult)
+        # for rResult in results:
+        #     print(rResult)
     except Exception as e:
         print(content)
         print(e)

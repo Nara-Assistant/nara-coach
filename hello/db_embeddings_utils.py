@@ -11,7 +11,7 @@ from .models import files as files_model
 import json
 from .notifications import send_notification
 
-def train_db(url, file_id, raw_data = None, emb_curs = None):
+def train_db(url, file_id, raw_data = None):
     try: 
         if url is not None:
             url = url.strip()
@@ -28,10 +28,15 @@ def train_db(url, file_id, raw_data = None, emb_curs = None):
             pdf_text = extract_pdf_text.get_text(f"{filename}-{os.path.basename(a.path)}")
 
         # print(pdf_text)
-        try: 
-            emb_curs.execute(f"delete from hello_file_embeddings where file_id={file_id}")
+        try:
+            with emb_conn:
+                with emb_conn.cursor() as emb_curs:
+                    try: 
+                        emb_curs.execute(f"delete from hello_file_embeddings where file_id={file_id}")
+                    except Exception as e:
+                        print(e)
         except Exception as e:
-            print(e)
+            print("Error deleting")
 
         print("Is here")
         chunks = tokens_per_string.split_chunks(pdf_text, chunk_size = 200)
@@ -46,17 +51,13 @@ def train_db(url, file_id, raw_data = None, emb_curs = None):
 
             try:  
                 print("Hey first iteration")  
+                time.sleep(20)
                 response = openai_requests.get_embedding(chunk[0])
                 print("Hey first iteration:after")  
-                dbembeddings.insert_embeddings(response, chunk[0], file_id, key + 1, chunk[1], emb_curs)
+                dbembeddings.insert_embeddings(response, chunk[0], file_id, key + 1, chunk[1])
                 current_position = current_position + 1
             except Exception as e:
                 current_position = current_position + 1
-                # pass
-                # chunk_array = [
-                #     *chunk_array,
-                #     (key, chunk)
-                # ]
                 failed_chunks = [
                     *failed_chunks,
                     (key, e)
