@@ -30,6 +30,7 @@ from django.core import serializers
 import hello.db_embeddings_utils as db_embeddings_utils
 import threading
 import requests
+from .dbconnect import emb_conn
 
 load_dotenv('.env')
 
@@ -44,8 +45,10 @@ load_dotenv('.env')
 #         print("Failed to update welcome message.")
 
 def train_files(files_to_train, avatar_id, queue_id):
-    for file_to_train in files_to_train:
-        db_embeddings_utils.train_db(file_to_train[1], file_to_train[0], file_to_train[2])
+    with emb_conn:
+        with emb_conn.cursor() as emb_curs:
+            for file_to_train in files_to_train:
+                db_embeddings_utils.train_db(file_to_train[1], file_to_train[0], file_to_train[2], emb_curs)
 
     current_queue = TrainingQueue.objects.filter(avatar_id= avatar_id, status = "IN_PROGRESS", id=queue_id).first()
 

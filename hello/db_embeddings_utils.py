@@ -11,66 +11,64 @@ from .models import files as files_model
 import json
 from .notifications import send_notification
 
-def train_db(url, file_id, raw_data = None):
-    with emb_conn:
-        with emb_conn.cursor() as emb_curs:
-            try: 
-                if url is not None:
-                    url = url.strip()
-                    a = urlparse(url)
+def train_db(url, file_id, raw_data = None, emb_curs = None):
+    try: 
+        if url is not None:
+            url = url.strip()
+            a = urlparse(url)
 
-                ts = time.time()
-                filename = f"{file_id}-{ts}"
-                pdf_text = None
+        ts = time.time()
+        filename = f"{file_id}-{ts}"
+        pdf_text = None
 
-                if raw_data is not None:
-                    pdf_text = raw_data
-                else:
-                    file_module.download_file(url, f"{filename}-{os.path.basename(a.path)}")
-                    pdf_text = extract_pdf_text.get_text(f"{filename}-{os.path.basename(a.path)}")
+        if raw_data is not None:
+            pdf_text = raw_data
+        else:
+            file_module.download_file(url, f"{filename}-{os.path.basename(a.path)}")
+            pdf_text = extract_pdf_text.get_text(f"{filename}-{os.path.basename(a.path)}")
 
-                # print(pdf_text)
-                try: 
-                    emb_curs.execute(f"delete from hello_file_embeddings where file_id={file_id}")
-                except Exception as e:
-                    print(e)
+        # print(pdf_text)
+        try: 
+            emb_curs.execute(f"delete from hello_file_embeddings where file_id={file_id}")
+        except Exception as e:
+            print(e)
 
-                print("Is here")
-                chunks = tokens_per_string.split_chunks(pdf_text, chunk_size = 200)
-                print(chunks)
-                chunk_array = [(key, chunk) for key, chunk in enumerate(chunks)]
-                failed_chunks = []
+        print("Is here")
+        chunks = tokens_per_string.split_chunks(pdf_text, chunk_size = 200)
+        print(chunks)
+        chunk_array = [(key, chunk) for key, chunk in enumerate(chunks)]
+        failed_chunks = []
 
-                current_position = 0
+        current_position = 0
 
-                while current_position < len(chunk_array):
-                    key, chunk = chunk_array[current_position]
+        while current_position < len(chunk_array):
+            key, chunk = chunk_array[current_position]
 
-                    try:  
-                        print("Hey first iteration")  
-                        response = openai_requests.get_embedding(chunk[0])
-                        print("Hey first iteration:after")  
-                        dbembeddings.insert_embeddings(response, chunk[0], file_id, key + 1, chunk[1], emb_curs)
-                        current_position = current_position + 1
-                    except Exception as e:
-                        current_position = current_position + 1
-                        pass
-                        # chunk_array = [
-                        #     *chunk_array,
-                        #     (key, chunk)
-                        # ]
-                        # failed_chunks = [
-                        #     *failed_chunks,
-                        #     (key, e)
-                        # ]
- 
-
-                if failed_chunks:
-                    send_notification("train_db", "nara-heroku", [("completion", f"done: {len(chunk_array) - len(failed_chunks)} - total: {len(chunk_array)}"), ("chunks", failed_chunks), ("file_id", file_id), ("description", "Error training chunks")])
-
-                    # print((key + 1, len(response)))
+            try:  
+                print("Hey first iteration")  
+                response = openai_requests.get_embedding(chunk[0])
+                print("Hey first iteration:after")  
+                dbembeddings.insert_embeddings(response, chunk[0], file_id, key + 1, chunk[1], emb_curs)
+                current_position = current_position + 1
             except Exception as e:
-                send_notification("train_db", "nara-heroku", [("url", url), ("file_id", file_id), ("e", str(e))])
+                current_position = current_position + 1
+                pass
+                # chunk_array = [
+                #     *chunk_array,
+                #     (key, chunk)
+                # ]
+                # failed_chunks = [
+                #     *failed_chunks,
+                #     (key, e)
+                # ]
+
+
+        if failed_chunks:
+            send_notification("train_db", "nara-heroku", [("completion", f"done: {len(chunk_array) - len(failed_chunks)} - total: {len(chunk_array)}"), ("chunks", failed_chunks), ("file_id", file_id), ("description", "Error training chunks")])
+
+            # print((key + 1, len(response)))
+    except Exception as e:
+        send_notification("train_db", "nara-heroku", [("url", url), ("file_id", file_id), ("e", str(e))])
 
 
 MAX_TOKENS = 1000
