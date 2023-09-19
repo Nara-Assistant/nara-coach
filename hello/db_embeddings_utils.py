@@ -42,7 +42,7 @@ def train_db(url, file_id, raw_data = None):
                 failed_chunks = []
 
                 current_position = 0
-                
+
                 while current_position < len(chunk_array):
                     key, chunk = chunk_array[current_position]
 
@@ -53,6 +53,7 @@ def train_db(url, file_id, raw_data = None):
                         dbembeddings.insert_embeddings(response, chunk[0], file_id, key + 1, chunk[1], emb_curs)
                         current_position = current_position + 1
                     except Exception as e:
+                        current_position = current_position + 1
                         pass
                         # chunk_array = [
                         #     *chunk_array,
