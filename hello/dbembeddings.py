@@ -78,7 +78,7 @@ def get_valid_files(files_ids):
                 for rResult in results:
                     response = [
                         *response,
-                        rResult
+                        *rResult
                     ]
             except Exception as e:
                 print(e)
