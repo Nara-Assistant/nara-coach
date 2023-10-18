@@ -73,7 +73,7 @@ def train_db(url, file_id, raw_data = None, avatar_id = None):
 
         if failed_chunks:
             set_failed_chunks(failed_chunks, file_id, avatar_id)
-            send_notification("train_db", "nara-heroku", [("completion", f"done: {len(chunk_array) - len(failed_chunks)} - total: {len(chunk_array)}"), ("chunks", failed_chunks), ("file_id", file_id), ("description", "Error training chunks")])
+            # send_notification("train_db", "nara-heroku", [("completion", f"done: {len(chunk_array) - len(failed_chunks)} - total: {len(chunk_array)}"), ("chunks", failed_chunks), ("file_id", file_id), ("description", "Error training chunks")])
 
             # print((key + 1, len(response)))
     except Exception as e:

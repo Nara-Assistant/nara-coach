@@ -17,4 +17,4 @@ pytesseract==0.3.10
 rembg==2.0.30
 pinecone-client==2.2.1
 datasets==2.10.0
-tiktoken==0.3.0
+tiktoken==0.4.0
