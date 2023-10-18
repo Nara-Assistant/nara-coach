@@ -99,6 +99,27 @@ def execute_from_queue(request):
         print(e)
         return JsonResponse({"message": "ERROR"}, status=500)
 
+@require_http_methods(["GET"])
+def get_valid_files(request):
+    try:
+        files_ids = request.headers.get('X-FILES-IDS') or None
+
+        if files_ids:
+            files_ids = json.loads(files_ids) if files_ids is not None else None
+        else:
+            return JsonResponse({
+                "message": "error"
+            }, status=400)
+
+        response = db_embeddings_utils.get_valid_files(files_ids)
+        return JsonResponse({
+            "message": "success",
+            "data": response
+        })
+    except Exception as e:
+        return JsonResponse({
+            "message": "error"
+        }, status=500)
 
 
 @csrf_exempt

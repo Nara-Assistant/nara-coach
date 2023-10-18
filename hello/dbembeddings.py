@@ -63,3 +63,25 @@ def match_documents(vector, threshold, count, files_ids):
 
     return response
 
+
+def get_valid_files(files_ids):
+    response = []
+    with emb_conn:
+        with emb_conn.cursor() as curs:
+            try:
+                filesString = '(' + ', '.join([str(fileItem) for fileItem in files_ids]) + ')'
+                curs.execute(f"select file_id from hello_file_embeddings where file_id in {filesString} group by file_id")
+                
+                results = curs.fetchall()
+
+
+                for rResult in results:
+                    response = [
+                        *response,
+                        rResult
+                    ]
+            except Exception as e:
+                print(e)
+
+    return response
+

@@ -129,3 +129,5 @@ def build_prompt(query, files_ids):
     
     return json.dumps(response)
 
+def get_valid_files(files_ids):
+    return dbembeddings.get_valid_files(files_ids)
