@@ -27,6 +27,7 @@ from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import urlparse
 from django.core import serializers
 import jwt
+import sys
 
 load_dotenv('.env')
 
@@ -496,10 +497,11 @@ def image_upload(request):
             
             return JsonResponse({ "message": "SUCCESS", "data": {
                 "text": utils.get_text_from_image(request.FILES['file'].name)
-            }})
+            }}, status = 500)
 
     except Exception as e:
         print(e)
+        sys.stdout.flush()
         return JsonResponse({ "message": "ERROR"})
 
 

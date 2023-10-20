@@ -51,6 +51,7 @@ def train_files(files_to_train, avatar_id, queue_id):
 
     current_queue = TrainingQueue.objects.filter(avatar_id= avatar_id, status = "IN_PROGRESS", id=queue_id).first()
     
+    ## TODO: validate that has not incomplete chunks
     if current_queue is not None:
         current_queue.status = "DONE"
         # update_welcome_message(avatar_id)
