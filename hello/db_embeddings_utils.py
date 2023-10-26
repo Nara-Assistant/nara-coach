@@ -97,6 +97,9 @@ def build_prompt(query, files_ids):
         if chunks_by_file_id.get(_file_id) is None:
             file_domain = files_model.objects.filter(id=_file_id).first()
             file_metadata = "" if file_domain is None else file_domain.metadata
+            if file_domain is not None:
+                file_metadata = "" if file_domain.is_private is True else file_metadata
+                
             chunks_by_file_id[_file_id] = {
                 "chunks": [],
                 "metadata": file_metadata

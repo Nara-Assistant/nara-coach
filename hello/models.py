@@ -42,6 +42,7 @@ class files(models.Model):
     file_type = models.CharField(default="TRAINING", max_length=255, null=True, blank=True)
     metadata = models.TextField(null=True, blank=True)
     raw_data = models.TextField(null=True)
+    is_private = models.BooleanField(default=False)
 
 class PresetQuestions(models.Model):
     created_at = models.DateTimeField("date created", auto_now_add=True, null=True)
