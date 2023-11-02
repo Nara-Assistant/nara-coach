@@ -80,7 +80,7 @@ def train_db(url, file_id, raw_data = None, avatar_id = None):
         send_notification("train_db", "nara-heroku", [("url", url), ("file_id", file_id), ("e", str(e))])
 
 
-MAX_TOKENS = 1000
+MAX_TOKENS = 2000
 SEPARATOR = "\n* "
 
 def build_prompt(query, files_ids):
