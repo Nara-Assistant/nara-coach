@@ -80,12 +80,13 @@ def train_db(url, file_id, raw_data = None, avatar_id = None):
         send_notification("train_db", "nara-heroku", [("url", url), ("file_id", file_id), ("e", str(e))])
 
 
-MAX_TOKENS = 2000
+# MAX_TOKENS = 2000
 SEPARATOR = "\n* "
 
-def build_prompt(query, files_ids):
+def build_prompt(query, files_ids, threshold = 0.5, count = 10):
+    MAX_TOKENS = count * 20
     response = openai_requests.get_embedding(query)
-    documents_response = dbembeddings.match_documents(response, threshold=0.5, count=10, files_ids=files_ids)
+    documents_response = dbembeddings.match_documents(response, threshold=threshold, count=count, files_ids=files_ids)
     print(documents_response)
     chunks = []
     total_tokens = 0

@@ -158,6 +158,8 @@ def get_prompt(request):
     """ Get pdf urls """
     print("mmmm")
     avatar_path = request.headers.get('X-AVATAR-PATH') or ""
+    threshold = request.headers.get('X-THRESHOLD') or 0.5
+    count = request.headers.get('X-COUNT') or 10
 
     # Find the avatar using the avatar_path
     try:
@@ -172,7 +174,7 @@ def get_prompt(request):
     question_asked = json.loads(request.body)["question"]
     try:
         print(file_ids)
-        response = db_embeddings_utils.build_prompt(question_asked, file_ids)
+        response = db_embeddings_utils.build_prompt(question_asked, file_ids, float(threshold), int(count))
         print(response)
         return JsonResponse({"message": "SUCCESS", "data": {"prompt": response}}, status=200)
     except Exception as e:
