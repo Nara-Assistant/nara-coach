@@ -83,7 +83,7 @@ def train_db(url, file_id, raw_data = None, avatar_id = None):
 # MAX_TOKENS = 2000
 SEPARATOR = "\n* "
 
-def build_prompt(query, files_ids, threshold = 0.5, count = 10):
+def build_prompt(query, files_ids, threshold = 0.5, count = 5):
     MAX_TOKENS = count * 200
     response = openai_requests.get_embedding(query)
     documents_response = dbembeddings.match_documents(response, threshold=threshold, count=count, files_ids=files_ids)

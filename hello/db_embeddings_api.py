@@ -159,7 +159,7 @@ def get_prompt(request):
     print("mmmm")
     avatar_path = request.headers.get('X-AVATAR-PATH') or ""
     threshold = request.headers.get('X-THRESHOLD') or 0.5
-    count = request.headers.get('X-COUNT') or 10
+    count = request.headers.get('X-COUNT') or 5
 
     # Find the avatar using the avatar_path
     try:
